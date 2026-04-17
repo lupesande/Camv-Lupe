@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+<title>CAMV LUPE</title>
+
+<!-- PWA: iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="CAMV LUPE"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#6c63ff"/>
+<meta name="description" content="Herramienta interactiva de preparación para el examen CAMV — Comité de Acreditación de Conocimientos en el Mercado de Valores de Chile"/>
+
+<!-- Ícono de la app (inline SVG convertido a data URL) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236c63ff'/><stop offset='1' stop-color='%23a855f7'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='url(%23g)'/><text x='90' y='80' font-family='-apple-system,sans-serif' font-size='52' font-weight='900' fill='white' text-anchor='middle'>📊</text><text x='90' y='140' font-family='-apple-system,sans-serif' font-size='28' font-weight='900' fill='white' text-anchor='middle'>CAMV</text></svg>"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236c63ff'/><stop offset='1' stop-color='%23a855f7'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='url(%23g)'/><text x='90' y='115' font-family='-apple-system,sans-serif' font-size='90' font-weight='900' fill='white' text-anchor='middle'>📊</text></svg>"/>
+
+<!-- Manifest inline -->
+<link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22CAMV%20LUPE%22%2C%22short_name%22%3A%22CAMV%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f1117%22%2C%22theme_color%22%3A%22%236c63ff%22%2C%22orientation%22%3A%22any%22%7D"/>
+
+<style>
+:root{--bg:#0f1117;--s1:#1a1d27;--s2:#22263a;--s3:#2a2e42;--acc:#6c63ff;--grn:#48cfad;--red:#ff6b6b;--yel:#ffd93d;--txt:#e8eaf0;--mut:#8b90a7;--bdr:#2a2d3e;--r:12px;--rs:8px;}
+body.light{--bg:#f0f2f8;--s1:#ffffff;--s2:#e8eaf2;--s3:#d8dbe8;--txt:#1a1d27;--mut:#5a5f7a;--bdr:#c8cad8;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}
+html,body{-webkit-user-select:none;user-select:none;overscroll-behavior:none;}
+input,textarea,select,.opt,.qb,.fb,.errl li,.sugg,.tc-meta,.fcdesc{-webkit-user-select:text;user-select:text;}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;font-size:14px;transition:background .2s,color .2s;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+#nav{background:var(--s1);border-bottom:2px solid var(--bdr);display:flex;align-items:center;gap:2px;padding:0 14px;overflow-x:auto;flex-shrink:0;}
+#nav .logo{font-size:15px;font-weight:800;color:var(--acc);white-space:nowrap;padding:14px 12px 14px 0;border-right:1px solid var(--bdr);margin-right:8px;}
+.nb{background:none;border:none;color:var(--mut);font-size:12px;font-weight:600;padding:13px 10px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;}
+.nb:hover{color:var(--txt);}
+.nb.on{color:var(--acc);border-bottom-color:var(--acc);}
+.nb.sp{color:var(--yel)!important;}
+.nb.sp.on{border-bottom-color:var(--yel);}
+.nb.theme{margin-left:auto;border-bottom:none;font-size:16px;}
+#wrap{display:flex;min-height:calc(100vh - 47px);}
+#sb{width:215px;min-width:215px;background:var(--s1);border-right:1px solid var(--bdr);overflow-y:auto;padding-bottom:30px;flex-shrink:0;}
+.sb-sec{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mut);padding:14px 14px 5px;font-weight:700;}
+.sb-it{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:12px;color:var(--mut);cursor:pointer;border-left:3px solid transparent;transition:all .15s;}
+.sb-it:hover{color:var(--txt);background:var(--s2);}
+.sb-it.on{color:var(--txt);background:var(--s2);border-left-color:var(--acc);}
+.sb-cnt{margin-left:auto;font-size:10px;background:var(--s3);padding:1px 6px;border-radius:6px;min-width:22px;text-align:center;}
+.sb-div{height:1px;background:var(--bdr);margin:8px 14px;}
+#main{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 47px);}
+.pg{display:none;}
+.pg.on{display:block;}
+.card{background:var(--s1);border-radius:var(--r);padding:22px;margin-bottom:16px;border:1px solid var(--bdr);}
+.ct{font-size:17px;font-weight:700;margin-bottom:4px;}
+.cs{color:var(--mut);font-size:12px;margin-bottom:18px;}
+.sr{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.sb2{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--rs);padding:12px 16px;flex:1;min-width:85px;text-align:center;}
+.sb2 .v{font-size:22px;font-weight:700;}
+.sb2 .l{font-size:10px;color:var(--mut);margin-top:2px;}
+.sb2.ok .v{color:var(--grn);}
+.sb2.bad .v{color:var(--red);}
+.sb2.pct .v{color:var(--acc);}
+.btn{background:var(--acc);color:#fff;border:none;border-radius:var(--rs);padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;}
+.btn:hover{opacity:.85;}
+.btn.sec{background:var(--s2);border:1px solid var(--bdr);color:var(--txt);}
+.btn.red{background:var(--red);}
+.btn.grn{background:var(--grn);color:#111;}
+.btn.ylw{background:var(--yel);color:#111;}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.qn{font-size:11px;color:var(--mut);margin-bottom:8px;}
+.qb{background:var(--s2);border-radius:var(--rs);padding:16px 18px;font-size:14px;font-weight:600;line-height:1.55;margin-bottom:16px;border-left:4px solid var(--acc);}
+.opt{display:block;width:100%;text-align:left;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rs);padding:11px 16px;margin-bottom:8px;font-size:13px;cursor:pointer;transition:all .18s;color:var(--txt);line-height:1.4;}
+.opt:hover:not(:disabled){border-color:var(--acc);}
+.opt.ok{background:#1a3a2a;border-color:var(--grn);color:var(--grn);}
+.opt.bad{background:#3a1a1a;border-color:var(--red);color:var(--red);}
+.fb{background:var(--s2);border-radius:var(--rs);padding:14px 16px;margin-top:12px;border-left:4px solid var(--acc);font-size:13px;line-height:1.6;display:none;}
+.pb-w{background:var(--s3);border-radius:3px;height:8px;margin:4px 0 12px;}
+.pb-f{height:100%;border-radius:3px;transition:width .4s;}
+.bdg{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;}
+.bG{background:#1e3a5f;color:#6ab4ff;}
+.bE{background:#3a1e5f;color:#c46aff;}
+.tc{background:var(--s2);border-radius:var(--rs);padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--acc);}
+.tc.tred{border-left-color:var(--red);}
+.tc.tylw{border-left-color:var(--yel);}
+.tc.tgrn{border-left-color:var(--grn);}
+.tc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.tc-name{font-size:13px;font-weight:600;}
+.tc-pct{font-size:13px;font-weight:700;}
+.tc-meta{font-size:11px;color:var(--mut);}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.mi{background:var(--s2);border:2px solid var(--bdr);border-radius:var(--rs);padding:10px 13px;cursor:pointer;font-size:12px;line-height:1.4;transition:all .18s;}
+.mi:hover{border-color:var(--acc);}
+.mi.sel{border-color:var(--yel);background:#2e2a14;}
+.mi.matched{border-color:var(--grn);background:#1a3a2a;color:var(--grn);cursor:default;pointer-events:none;}
+.mi.err{border-color:var(--red);background:#3a1a1a;}
+#etimer{font-size:30px;font-weight:800;text-align:center;color:var(--yel);margin-bottom:6px;letter-spacing:2px;}
+#epbar{height:5px;background:var(--s3);border-radius:3px;margin-bottom:16px;}
+#epfill{height:100%;background:var(--acc);border-radius:3px;transition:width .3s;}
+.rcirc{width:110px;height:110px;border-radius:50%;border:4px solid var(--acc);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;font-weight:800;}
+.errl{list-style:none;}
+.errl li{background:var(--s2);border-radius:var(--rs);padding:11px 14px;margin-bottom:8px;font-size:12px;border-left:3px solid var(--red);line-height:1.5;}
+#fc-p{perspective:1000px;margin:14px auto;max-width:540px;}
+#fc{width:100%;min-height:180px;position:relative;transform-style:preserve-3d;transition:transform .45s;cursor:pointer;}
+#fc.flip{transform:rotateY(180deg);}
+.fcf{position:absolute;width:100%;min-height:180px;backface-visibility:hidden;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 24px;text-align:center;overflow-y:auto;}
+.fcf.fr{background:var(--s2);border:2px solid var(--acc);}
+.fcf.bk{background:var(--s2);border:2px solid var(--grn);transform:rotateY(180deg);}
+.fclbl{font-size:10px;color:var(--mut);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.fcterm{font-size:21px;font-weight:700;color:var(--acc);}
+.fcterm.sm{font-size:12px;font-weight:400;color:var(--txt);line-height:1.5;}
+.fcdesc{font-size:12px;line-height:1.5;color:var(--txt);}
+.rrow{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+.rb{padding:7px 16px;border:none;border-radius:var(--rs);cursor:pointer;font-size:12px;font-weight:700;}
+.rb.easy{background:var(--grn);color:#111;}
+.rb.meh{background:var(--yel);color:#111;}
+.rb.hard{background:var(--red);color:#fff;}
+.snav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.snb{background:var(--s2);border:1px solid var(--bdr);color:var(--mut);font-size:12px;font-weight:600;padding:7px 14px;border-radius:var(--rs);cursor:pointer;transition:all .2s;}
+.snb:hover{color:var(--txt);}
+.snb.on{background:var(--yel);border-color:var(--yel);color:#111;}
+.cp{display:inline-block;padding:5px 12px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bdr);color:var(--mut);margin:3px;transition:all .2s;}
+.cp:hover{border-color:var(--acc);color:var(--txt);}
+.cp.on{background:var(--yel);border-color:var(--yel);color:#111;}
+select{background:var(--s2);border:1px solid var(--bdr);color:var(--txt);padding:7px 12px;border-radius:var(--rs);font-size:13px;}
+.sugg{background:var(--s2);border-radius:var(--rs);padding:12px 16px;font-size:12px;line-height:1.7;border-left:3px solid var(--acc);margin-top:8px;}
+@media(max-width:600px){
+  #wrap{flex-direction:column;}
+  #sb{width:100%;min-width:100%;height:auto;max-height:none;border-right:none;border-bottom:2px solid var(--bdr);padding-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;padding:8px;overflow-x:auto;}
+  #sb .sb-sec{width:100%;padding:6px 4px 2px;}
+  #sb .sb-it{flex:1;min-width:140px;padding:7px 10px;font-size:11px;border-left:none;border-bottom:3px solid transparent;}
+  #sb .sb-it.on{border-left:none;border-bottom-color:var(--acc);}
+  #sb .sb-div{display:none;}
+  #main{max-height:none;padding:12px;}
+  .mg{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="nav">
+  <span class="logo">📊 CAMV LUPE</span>
+  <button class="nb on" onclick="goPage('dash',this)">🏠 Dashboard</button>
+  <button class="nb" onclick="goPage('quiz',this)">🎯 Quiz</button>
+  <button class="nb" onclick="goPage('match',this)">🔗 Emparejar</button>
+  <button class="nb" onclick="goPage('exam',this)">📝 Examen</button>
+  <button class="nb" onclick="goPage('errors',this)">❌ Errores</button>
+  <button class="nb sp" onclick="goPage('plazos',this)">⏱ Plazos</button>
+  <button class="nb theme" id="tbtn" onclick="toggleTheme()">🌙</button>
+</div>
+<div id="wrap">
+<div id="sb">
+  <div class="sb-sec">Componente General</div>
+  <div class="sb-it on" onclick="selT('all',this)">📚 Todos<span class="sb-cnt" id="cn-all">—</span></div>
+  <div class="sb-it" onclick="selT('CG1',this)">⚖️ Marco Jurídico<span class="sb-cnt" id="cn-CG1">—</span></div>
+  <div class="sb-it" onclick="selT('CG2',this)">🛡️ Gestión de Riesgos<span class="sb-cnt" id="cn-CG2">—</span></div>
+  <div class="sb-it" onclick="selT('CG3',this)">🔢 Conceptos Financieros<span class="sb-cnt" id="cn-CG3">—</span></div>
+  <div class="sb-div"></div>
+  <div class="sb-sec">Componente Específico</div>
+  <div class="sb-it" onclick="selT('CE1',this)">👤 Perfil del Cliente<span class="sb-cnt" id="cn-CE1">—</span></div>
+  <div class="sb-it" onclick="selT('CE2',this)">💼 Productos y Servicios<span class="sb-cnt" id="cn-CE2">—</span></div>
+  <div class="sb-it" onclick="selT('CE3',this)">🔒 Info Privilegiada<span class="sb-cnt" id="cn-CE3">—</span></div>
+  <div class="sb-div"></div>
+  <div class="sb-sec">Especial</div>
+  <div class="sb-it" onclick="goPage('plazos',null)">⏱ Plazos y Valores</div>
+</div>
+<div id="main">
+
+<!-- DASHBOARD -->
+<div class="pg on" id="pg-dash">
+  <div class="card">
+    <div class="ct">🏠 Dashboard — CAMV LUPE</div>
+    <div class="cs">Tu rendimiento en esta sesión, actualizado en tiempo real.</div>
+    <div class="sr" id="d-global"></div>
+    <h3 style="font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">Rendimiento por Sección</h3>
+    <div id="d-temas"></div>
+    <div class="sugg" id="d-sugg">Practica para ver sugerencias personalizadas.</div>
+    <div class="brow">
+      <button class="btn sec" onclick="goPage('quiz',document.querySelectorAll('.nb')[1])">Ir al Quiz →</button>
+      <button class="btn sec" onclick="goPage('exam',document.querySelectorAll('.nb')[3])">Hacer Examen →</button>
+      <button class="btn red" onclick="resetSess()">🗑 Reiniciar sesión</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="pg" id="pg-quiz">
+  <div class="card">
+    <div class="ct">🎯 Quiz</div>
+    <div class="sr" id="q-sr"></div>
+    <div class="qn" id="q-meta"></div>
+    <div class="qb" id="q-txt"></div>
+    <div id="q-opts"></div>
+    <div class="fb" id="q-fb"></div>
+    <div id="q-next" style="display:none;margin-top:12px;"><button class="btn" onclick="nextQ()">Siguiente →</button></div>
+  </div>
+  <div class="brow"><button class="btn sec" onclick="initQ()">🔄 Reiniciar Quiz</button></div>
+</div>
+
+<!-- MATCH -->
+<div class="pg" id="pg-match">
+  <div class="card">
+    <div class="ct">🔗 Emparejamiento</div>
+    <div class="cs">Conecta la pregunta con su respuesta correcta.</div>
+    <div class="mg" id="m-wrap"></div>
+    <div id="m-score" style="margin-top:14px;font-size:14px;"></div>
+    <div class="brow"><button class="btn sec" onclick="initM()">🔄 Nueva partida</button></div>
+  </div>
+</div>
+
+<!-- EXAM -->
+<div class="pg" id="pg-exam">
+  <div id="e-setup" class="card">
+    <div class="ct">📝 Simulacro de Examen</div>
+    <div class="cs">El examen real tiene 100 preguntas y 2h30m.</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin:16px 0;">
+      <div><div style="font-size:11px;color:var(--mut);margin-bottom:5px;">N° Preguntas</div>
+        <select id="en"><option value="20">20</option><option value="50">50</option><option value="100" selected>100</option><option value="9999">Todas</option></select></div>
+      <div><div style="font-size:11px;color:var(--mut);margin-bottom:5px;">Tiempo (min)</div>
+        <select id="et"><option value="0">Sin límite</option><option value="30">30</option><option value="60">60</option><option value="150" selected>150</option></select></div>
+      <div><div style="font-size:11px;color:var(--mut);margin-bottom:5px;">Componente</div>
+        <select id="ec"><option value="all">Todos</option><option value="G">Solo General</option><option value="E">Solo Específico</option></select></div>
+    </div>
+    <button class="btn" onclick="startE()">▶ Iniciar Examen</button>
+  </div>
+  <div id="e-run" style="display:none;">
+    <div id="etimer">00:00</div>
+    <div id="epbar"><div id="epfill" style="width:0%"></div></div>
+    <div class="card">
+      <div class="qn" id="eq-meta"></div>
+      <div class="qb" id="eq-txt" style="border-left-color:var(--yel);"></div>
+      <div id="eq-opts"></div>
+      <div id="eq-next" style="display:none;margin-top:12px;"><button class="btn" onclick="nextE()">Siguiente →</button></div>
+    </div>
+  </div>
+  <div id="e-res" class="card" style="display:none;">
+    <div class="ct" style="text-align:center;margin-bottom:16px;">Resultado del Examen</div>
+    <div class="rcirc" id="e-circ">—</div>
+    <div class="sr">
+      <div class="sb2 ok"><div class="v" id="er-ok">0</div><div class="l">Correctas</div></div>
+      <div class="sb2 bad"><div class="v" id="er-bad">0</div><div class="l">Incorrectas</div></div>
+      <div class="sb2 pct"><div class="v" id="er-pct">0%</div><div class="l">Puntaje</div></div>
+    </div>
+    <h3 style="font-size:12px;color:var(--mut);margin-bottom:10px;text-transform:uppercase;">Errores por sección:</h3>
+    <div id="er-temas" style="margin-bottom:16px;"></div>
+    <h3 style="font-size:12px;color:var(--mut);margin-bottom:10px;text-transform:uppercase;">Preguntas falladas:</h3>
+    <ul class="errl" id="er-list"></ul>
+    <div class="brow">
+      <button class="btn sec" onclick="document.getElementById('e-setup').style.display='';document.getElementById('e-res').style.display='none';">🔄 Nuevo examen</button>
+      <button class="btn red" onclick="goPage('errors',null)">Repasar errores →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ERRORS -->
+<div class="pg" id="pg-errors">
+  <div class="card">
+    <div class="ct">❌ Repaso de Errores</div>
+    <div class="cs">Solo preguntas que has fallado en esta sesión.</div>
+    <div id="err-body"></div>
+  </div>
+</div>
+
+<!-- PLAZOS -->
+<div class="pg" id="pg-plazos">
+  <div class="card" style="border-color:var(--yel);">
+    <div class="ct" style="color:var(--yel);">⏱ Módulo Plazos y Valores</div>
+    <div class="cs">Flashcards, Quiz y repaso para todo el material memorizable.</div>
+    <div id="p-cats"></div>
+  </div>
+  <div class="snav">
+    <button class="snb on" onclick="showPS('p-fc',this)">📇 Flashcards</button>
+    <button class="snb" onclick="showPS('p-qz',this)">🎯 Quiz</button>
+    <button class="snb" onclick="showPS('p-err',this)">❌ Errores</button>
+    <button class="snb" onclick="showPS('p-prog',this)">📊 Progreso</button>
+  </div>
+  <div id="p-fc" class="pg on">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+        <span style="font-size:12px;color:var(--mut);">Toca la tarjeta para voltear</span>
+        <button class="btn sec" id="fc-mb" onclick="toggleFCM()" style="font-size:11px;padding:5px 10px;">Plazo → Desc</button>
+      </div>
+      <div id="fc-cnt" style="text-align:center;font-size:12px;color:var(--mut);margin-bottom:8px;"></div>
+      <div id="fc-p"><div id="fc" onclick="flipFC()">
+        <div class="fcf fr"><div class="fclbl" id="fc-lf">Plazo / Valor</div><div class="fcterm" id="fc-ft">—</div><div style="font-size:10px;color:var(--mut);margin-top:7px;" id="fc-cat"></div></div>
+        <div class="fcf bk"><div class="fclbl" id="fc-lb">Descripción</div><div class="fcdesc" id="fc-bt">—</div></div>
+      </div></div>
+      <div style="text-align:center;font-size:11px;color:var(--mut);margin-top:6px;">👆 Toca para voltear</div>
+      <div class="rrow" id="fc-rates" style="display:none;">
+        <button class="rb easy" onclick="rateFC('easy')">✅ Fácil</button>
+        <button class="rb meh" onclick="rateFC('meh')">🤔 Dudosa</button>
+        <button class="rb hard" onclick="rateFC('hard')">❌ Difícil</button>
+      </div>
+      <div class="brow">
+        <button class="btn sec" onclick="prevFC()">← Ant</button>
+        <button class="btn sec" onclick="shuffleFC()">🔀</button>
+        <button class="btn" onclick="nextFC()">Sig →</button>
+      </div>
+    </div>
+  </div>
+  <div id="p-qz" class="pg">
+    <div class="card">
+      <div class="sr">
+        <div class="sb2 ok"><div class="v" id="pq-ok">0</div><div class="l">✅</div></div>
+        <div class="sb2 bad"><div class="v" id="pq-bad">0</div><div class="l">❌</div></div>
+        <div class="sb2 pct"><div class="v" id="pq-pct">—</div><div class="l">%</div></div>
+      </div>
+      <div class="qb" id="pq-txt"></div>
+      <div id="pq-opts"></div>
+      <div class="fb" id="pq-fb"></div>
+      <div id="pq-next" style="display:none;margin-top:10px;"><button class="btn" onclick="nextPQ()">Siguiente →</button></div>
+      <div class="brow"><button class="btn sec" onclick="initPQ()">🔄 Reiniciar</button></div>
+    </div>
+  </div>
+  <div id="p-err" class="pg"><div class="card"><div id="pe-body"></div></div></div>
+  <div id="p-prog" class="pg">
+    <div class="card">
+      <div class="ct" style="margin-bottom:14px;">📊 Progreso Plazos</div>
+      <div id="pp-body"></div>
+      <div class="brow"><button class="btn red" onclick="resetPS()">🗑 Reiniciar</button></div>
+    </div>
+  </div>
+</div>
+</div></div>
+
+<script>
+// ═══════════════════════════════════════════
+// PREGUNTAS — todos los facsímiles
+// t: CG1 CG2 CG3 CE1 CE2 CE3
+// ═══════════════════════════════════════════
+const QS=[
+{t:"CG1",q:"La Ley de Mercado de Valores NO prohíbe:",a:"La estabilización de precios de valores, cuando se realiza conforme a las normas de la CMF y con el objeto de llevar adelante una oferta pública de valores nuevos.",ops:["La estabilización de precios de valores, cuando se realiza conforme a las normas de la CMF y con el objeto de llevar adelante una oferta pública de valores nuevos.","La cotización o transacción ficticia de valores, cuando se realiza a través de negociaciones privadas.","Las transacciones que tengan por objeto fijar precios.","La estabilización de precios de valores que tengan por objeto llevar adelante una oferta pública de valores en el mercado secundario."],fb:"La estabilización en el marco de una oferta pública PRIMARIA (valores nuevos) y conforme a normas CMF es permitida."},
+{t:"CG1",q:"La NCG 380 establece que el intermediario deberá mantener los siguientes registros, con EXCEPCIÓN del:",a:"Registro de Deudas con Bancos y Casas Comerciales de los clientes.",ops:["Registro de sus Ejecutivos y Trabajadores.","Registro de las Personas Autorizadas para dar órdenes por los clientes.","Registro de las Repactaciones de Obligaciones de clientes.","Registro de Deudas con Bancos y Casas Comerciales de los clientes."],fb:"La NCG 380 no exige llevar registro de deudas personales del cliente con bancos o casas comerciales."},
+{t:"CG1",q:"La NCG 380, previo a la prestación de servicios al cliente, establece que el intermediario deberá:",a:"Celebrar un Contrato de Servicios con el cliente.",ops:["Tener la Ficha de cliente firmada por él.","Celebrar un Contrato de Servicios con el cliente.","Registrar a su cliente en la CMF.","Registrar a su cliente en alguna bolsa de valores del país."],fb:"La NCG 380 exige un CONTRATO DE SERVICIOS escrito antes de iniciar la relación comercial."},
+{t:"CG1",q:"Toda la documentación de respaldo del intermediario debe mantenerse por un plazo no inferior a:",a:"10 años.",ops:["10 años.","8 años.","5 años.","La CMF no ha establecido plazos mínimos."],fb:"Plazo de archivo de TODA la documentación del intermediario: 10 años."},
+{t:"CG1",q:"El patrimonio mínimo del intermediario según la Ley N°18.045 es:",a:"6.000 UF sin cuenta propia y 14.000 UF con cuenta propia.",ops:["6.000 UF sin cuenta propia y 10.000 UF con cuenta propia.","4.000 UF sin cuenta propia y 12.000 UF con cuenta propia.","6.000 UF sin cuenta propia y 14.000 UF con cuenta propia.","10.000 UF sin cuenta propia y 14.000 UF con cuenta propia."],fb:"Patrimonio mínimo: 6.000 UF general, 14.000 UF para cuenta propia. Garantía inicial adicional: 4.000 UF."},
+{t:"CG1",q:"Se entiende por \'accionista minoritario\' según la LMV:",a:"Quien posea menos del 10% de las acciones con derecho a voto, siempre que dicho porcentaje no le permita designar un director.",ops:["Quien posea menos del 15% de las acciones con derecho a voto, siempre que dicho porcentaje no le permita designar un director.","Quien posea menos del 10% de las acciones con derecho a voto, siempre que dicho porcentaje le permita designar al menos un director.","Quien posea menos del 10% de las acciones con derecho a voto, siempre que dicho porcentaje no le permita designar un director.","Quien posea menos del 50% de las acciones con derecho a voto, siempre que dicho porcentaje no le permita designar un director."],fb:"Dos condiciones COPULATIVAS: <10% Y que ese porcentaje NO le permita elegir un director."},
+{t:"CG1",q:"¿Cuál describe mejor qué es un fondo mutuo?",a:"Instrumento de ahorro e inversión, que reúne patrimonios formados con los aportes realizados por personas naturales o jurídicas y administrado por un gestor por cuenta y riesgo de sus partícipes.",ops:["Mecanismo de ahorro compuesto de acciones y otros instrumentos de deuda y fondos de capitalización, en moneda nacional.","Instrumento de ahorro e inversión, que reúne patrimonios formados con los aportes realizados por personas naturales o jurídicas y administrado por un gestor por cuenta y riesgo de sus partícipes.","Portafolio de acciones, derivados y futuros, administrado por entidades bancarias.","Instrumento de inversión diversificado compuesto por diversos instrumentos financieros de corto plazo."],fb:"El fondo mutuo es un patrimonio colectivo administrado profesionalmente. El riesgo es SIEMPRE de los partícipes."},
+{t:"CG1",q:"Una acción como instrumento financiero es:",a:"La parte proporcional del capital social de una sociedad anónima, que confiere derechos políticos y económicos a quien sea dueño.",ops:["Parte del patrimonio de una empresa, independientemente de la organización jurídica de ésta.","La parte proporcional del capital social de una sociedad anónima, que confiere derechos políticos y económicos a quien sea dueño.","Una proporción de los activos de una compañía, los cuales generan ingresos y gastos.","Un instrumento financiero de deuda que encuentra en el pasivo de una S.A. abierta."],fb:"Acción = fracción del CAPITAL SOCIAL de una S.A. Otorga derechos políticos (voto) y económicos (dividendos)."},
+{t:"CG1",q:"¿Qué es una clasificación de riesgo?",a:"Una opinión acerca del riesgo y capacidad de pago que se le aprecia a una determinada emisión de deuda para hacer frente a los vencimientos de capital e intereses.",ops:["Una recomendación para comprar, vender o mantener un determinado instrumento.","Una estimación de la pérdida esperada para los acreedores de capital.","Una opinión acerca del riesgo y capacidad de pago que se le aprecia a una determinada emisión de deuda para hacer frente a los vencimientos de capital e intereses.","Una indicación de la eficacia de una compañía y de su capacidad de crear valor a sus accionistas."],fb:"La clasificación de riesgo es una OPINIÓN sobre capacidad de pago, NO una recomendación de inversión."},
+{t:"CG1",q:"Una Clasificadora de Riesgo es:",a:"Entidad registrada en la CMF, cuyo objeto social exclusivo es la clasificación de valores de oferta pública y la realización de actividades complementarias.",ops:["Empresa auditora con departamentos internos autorizados para entregar clasificaciones de riesgo.","Entidad registrada en la CMF, cuyo objeto social exclusivo es la clasificación de valores de oferta pública y la realización de actividades complementarias.","Empresa de consultoría que clasifica voluntariamente los valores de oferta pública.","Entidad que diseña un scoring a partir exclusivamente de los estados financieros."],fb:"Clasificadora = entidad con OBJETO SOCIAL EXCLUSIVO de clasificación, registrada en la CMF."},
+{t:"CG1",q:"El ámbito de aplicación de la Ley de Mercado de Valores es:",a:"La oferta pública de valores y sus respectivos mercados e intermediarios.",ops:["La intermediación de valores.","La actividad de los corredores de bolsa y agentes de valores.","La compra y venta de valores de oferta pública.","La oferta pública de valores y sus respectivos mercados e intermediarios."],fb:"La LMV regula la OFERTA PÚBLICA de valores, sus mercados (bolsas) e intermediarios. Ámbito amplio."},
+{t:"CG1",q:"Se entiende por oferta pública de valores:",a:"La dirigida al público en general o a ciertos sectores o a grupos específicos de éste.",ops:["La dirigida al público en general o a ciertos sectores o a grupos específicos de éste.","Aquella que se encuentra dirigida, exclusivamente, a los inversionistas institucionales.","Toda oferta de valores que realice un intermediario de valores.","Aquella que sea declarada como pública por la CMF mediante norma de carácter general."],fb:"Oferta pública = dirigida al público en general, a un sector o a un grupo específico (no a una persona individual)."},
+{t:"CG1",q:"Según la LMV, el objeto de las clasificadoras de riesgo es:",a:"Clasificar los instrumentos de oferta pública y realizar aquellas actividades complementarias autorizadas por la Ley.",ops:["Valorizar los instrumentos de oferta pública y realizar actividades complementarias autorizadas.","Definir los instrumentos que pueden adquirir los inversionistas calificados.","Clasificar los instrumentos de oferta pública y realizar aquellas actividades complementarias autorizadas por la Ley.","Determinar la tasa de descuento a aplicar a los instrumentos de oferta pública."],fb:"El objeto es CLASIFICAR (no valorizar ni determinar tasas) + actividades complementarias autorizadas."},
+{t:"CG1",q:"¿Cuál actor del mercado financiero NO está regido por la NCG 380?",a:"Corredores de Seguros.",ops:["Corredores de Bolsa.","Corredores de Bolsa de Productos.","Corredores de Seguros.","Agentes de Valores."],fb:"La NCG 380 rige a corredores de bolsa (valores y productos) y agentes de valores. Los de SEGUROS tienen otra normativa."},
+{t:"CG1",q:"Si la administradora de un fondo se disuelve, los costos de su liquidación son de cargo:",a:"De la propia administradora.",ops:["De la propia administradora.","Del fondo.","De los partícipes.","Del directorio de la administradora."],fb:"Los costos de liquidación son a cargo de la ADMINISTRADORA, no del fondo ni de los partícipes (separación de patrimonios)."},
+{t:"CG1",q:"El patrimonio de las AGF (Administradoras Generales de Fondos) no deberá ser inferior a:",a:"10.000 UF.",ops:["10.000 UF.","10.000 UF más 1% del monto total administrado.","10.000 UF más 10.000 UF por cada fondo administrado.","40.000 UF."],fb:"Patrimonio mínimo AGF: 10.000 UF (puede aumentar con el patrimonio administrado, pero el mínimo es fijo)."},
+{t:"CG1",q:"Un director/ejecutivo principal que adquiere o enajena valores de la S.A. donde trabaja debe:",a:"Informar a la CMF y a las bolsas de valores donde el emisor se encuentre registrado.",ops:["Informar al pleno del directorio.","No tiene obligación de informar.","Informar a la CMF y a las bolsas de valores donde el emisor se encuentre registrado.","Informar al Depósito Central de Valores del país."],fb:"Obligación de insiders: reportar operaciones con valores propios a la CMF y a las bolsas donde se transen."},
+{t:"CG1",q:"Para que un título accionario sea cotizado y transado en bolsa chilena, se requerirá:",a:"Que las acciones estén inscritas en el Registro de Valores de la CMF y en al menos una bolsa de valores.",ops:["Que las acciones estén inscritas en el Registro de Valores de la CMF y en al menos una bolsa de valores.","Que la sociedad tenga un patrimonio contable superior a UF 1.000.000.","Que no existan distintas series de acciones.","Que las acciones dispongan de clasificación de riesgo independiente."],fb:"Requisito DUAL: inscripción en Registro de Valores CMF + inscripción en al menos una bolsa de valores."},
+{t:"CG1",q:"Un fondo con Reglamento Interno que permite rescate total y permanente con plazo máximo de 12 días es:",a:"Fondo de Inversión.",ops:["Fondo Mutuo.","Fondo Mutuo no rescatable.","Fondo Mutuo Estructurado.","Fondo de Inversión."],fb:"Los fondos mutuos pagan el rescate generalmente en 10 días o menos. 12 días sugiere un fondo de inversión rescatable."},
+{t:"CG2",q:"¿Qué busca medir el Backtesting en un modelo de trading?",a:"Eficiencia del modelo.",ops:["Calidad de los datos históricos.","Eficacia de la información.","Eficiencia de los datos.","Eficiencia del modelo."],fb:"El backtesting evalúa la EFICIENCIA del modelo comparando sus estimaciones con resultados reales ya ocurridos."},
+{t:"CG2",q:"La normativa de la CMF define dos indicadores de solvencia para los intermediarios de valores:",a:"Una razón de cobertura patrimonial y una razón de endeudamiento.",ops:["Una razón de cobertura patrimonial y un patrimonio mínimo.","Una razón de liquidez y una razón de endeudamiento.","Una razón de cobertura patrimonial y una razón de endeudamiento.","Un patrimonio mínimo y una razón de endeudamiento."],fb:"Los dos indicadores de SOLVENCIA son: (1) cobertura patrimonial y (2) endeudamiento (PE ≤ 20×PL)."},
+{t:"CG2",q:"¿Cuál constituye riesgo de liquidez en un intermediario de valores?",a:"Riesgo de financiamiento.",ops:["Riesgo operacional.","Riesgo reputacional.","Riesgo de crédito.","Riesgo de financiamiento."],fb:"El riesgo de liquidez incluye el riesgo de financiamiento: no poder obtener fondos al vencimiento de obligaciones."},
+{t:"CG2",q:"Riesgo de crédito se define como:",a:"El riesgo asociado a pérdidas debido al incumplimiento de la contraparte.",ops:["El riesgo asociado a las variaciones de valor de la garantía de las operaciones que involucran crédito.","La posibilidad de perder dinero debido a un cambio negativo en la percepción del acreedor.","El riesgo asociado a pérdidas debido al incumplimiento de la contraparte.","La posibilidad que el deudor sea incapaz de levantar fondos para su crecimiento financiero."],fb:"Riesgo de crédito = probabilidad de pérdida por INCUMPLIMIENTO de la contraparte (default)."},
+{t:"CG2",q:"El certificado que acredita un sistema de prevención (Ley de Responsabilidad Penal) puede ser entregado por:",a:"Empresas de auditoría externa, sociedades clasificadoras de riesgo u otras entidades registradas ante la CMF.",ops:["Cualquier persona natural, sin inscripción alguna.","Empresas de auditoría externa, sociedades clasificadoras de riesgo u otras entidades registradas ante la CMF.","El mismo auditor interno.","El representante legal de la empresa."],fb:"Solo entidades EXTERNAS registradas ante la CMF (auditoras, clasificadoras) pueden certificar el modelo de prevención."},
+{t:"CG2",q:"El riesgo de liquidez representa:",a:"El riesgo que surge cuando un emisor de valores no puede cumplir sus obligaciones al vencimiento establecido.",ops:["El riesgo asociado a las variaciones en el valor de los activos de la empresa.","El riesgo que surge cuando un emisor de valores no puede cumplir sus obligaciones al vencimiento establecido.","El riesgo debido a las variaciones de los tipos de interés y de los plazos.","Las fluctuaciones en las variables macroeconómicas que determinan el incumplimiento de los pagos."],fb:"Riesgo de liquidez = incapacidad de cumplir obligaciones al vencimiento por falta de activos líquidos."},
+{t:"CG2",q:"La clasificación de Standard & Poor\'s respecto a una emisión de deuda mide:",a:"La capacidad de pago de la emisión.",ops:["La liquidez de la emisión.","La capacidad de pago de la emisión.","La solvencia del emisor.","El nivel de endeudamiento del emisor."],fb:"La clasificación de riesgo de una emisión mide la CAPACIDAD DE PAGO de esa emisión específica en sus términos pactados."},
+{t:"CG2",q:"El valor en riesgo (VaR) mide el riesgo en:",a:"Monto en dinero.",ops:["Puntos base.","Desviaciones estándar.","Monto en dinero.","Puntos porcentuales."],fb:"El VaR expresa la pérdida potencial en términos MONETARIOS (ej: \'puede perderse hasta $X con 95% de confianza\')."},
+{t:"CG2",q:"De acuerdo al Título XIV de la Ley de Valores, ¿cuál es la clasificación máxima de corto plazo?",a:"N-1.",ops:["AAA.","N-5.","N-1.","A."],fb:"Corto plazo: N-1 (mejor) a N-5 (peor). Largo plazo: AAA es la mejor. N-1 equivale al AAA."},
+{t:"CG2",q:"Las obligaciones respecto a la razón de endeudamiento implican que:",a:"El pasivo exigible no supere en más de 20 veces el patrimonio líquido.",ops:["El pasivo exigible no supere en más de 20 veces el patrimonio líquido.","El pasivo exigible sea igual al patrimonio depurado.","El pasivo exigible no supere en más de 20 veces al patrimonio total.","El pasivo exigible no supere en más de 20 veces al activo total."],fb:"Razón de endeudamiento: Pasivo Exigible ≤ 20 × Patrimonio LÍQUIDO (no el total, no el depurado)."},
+{t:"CG2",q:"Corredora con pasivo exigible de $20.000 millones. ¿Patrimonio líquido mínimo?",a:"$1.000 millones.",ops:["$5.000 millones.","$1.000 millones.","$500 millones.","$100 millones."],fb:"PL ≥ PE/20 = 20.000/20 = $1.000 millones."},
+{t:"CG2",q:"Corredora con activo disponible y realizable (7 días) de $1.000 millones. ¿Máximo pasivo exigible inmediato (7 días)?",a:"$1.000 millones.",ops:["$2.500 millones.","$1.500 millones.","$1.000 millones.","$500 millones."],fb:"Indicador de liquidez general: activos líquidos a 7 días ≥ pasivos a 7 días. Ratio mínimo = 1."},
+{t:"CG2",q:"Cartera con VaR de $35 millones a 1 día al 95% de confianza significa:",a:"Se pueden perder más de $35 millones en un día, con un 5% de probabilidad.",ops:["La pérdida máxima en un día será de $35 millones.","Se pueden perder, a lo menos, $35 millones en un día, con un 95% de probabilidad.","Se pueden perder menos de $35 millones en un día, con un 5% de probabilidad.","Se pueden perder más de $35 millones en un día, con un 5% de probabilidad."],fb:"VaR al 95%: el 95% de los días perderás MENOS de $35M. El 5% restante podrías perder MÁS."},
+{t:"CG2",q:"Inversionista que no espera volatilidad en una acción (post-resultados). Estrategia recomendada (spot $30):",a:"Vender una CALL y vender una PUT al mismo tiempo a $30.",ops:["Comprar una CALL (opción de compra) a $30.","Comprar una PUT (opción de venta) a $30.","Comprar una CALL y vender una PUT al mismo tiempo a $30.","Vender una CALL y vender una PUT al mismo tiempo a $30."],fb:"Si no habrá volatilidad, el lanzador de opciones gana las primas. Short straddle = vender CALL + vender PUT."},
+{t:"CG2",q:"Decisión de desechar la producción de teléfonos inteligentes. Tipo de riesgo:",a:"Riesgo estratégico.",ops:["Riesgo operacional.","Riesgo de crédito.","Riesgo de mercado.","Riesgo estratégico."],fb:"Decisiones de negocio de alto nivel que afectan el modelo de la empresa son RIESGO ESTRATÉGICO."},
+{t:"CG2",q:"El riesgo de crédito de un intermediario de valores se genera, principalmente, por:",a:"Incumplimiento de los deudores por intermediación.",ops:["Intermediar acciones de mayor riesgo.","Incumplimiento de los deudores por intermediación.","Alza intempestiva de la tasa de interés.","Menores exigencias en la definición del perfil del cliente."],fb:"El riesgo de crédito surge cuando los clientes (deudores por intermediación) no cumplen sus obligaciones de pago."},
+{t:"CG2",q:"Tasa libre de riesgo 4%, Beta del activo 2, retorno esperado del mercado 12%. ¿Retorno esperado del activo?",a:"20%",ops:["24%","16%","18%","20%"],fb:"CAPM: E(r) = Rf + β(Rm − Rf) = 4% + 2×(12%−4%) = 4% + 16% = 20%."},
+{t:"CG2",q:"Según la Circular N°2.054 de CMF, ¿cuál es FALSA respecto de la función de Gestión de Riesgos?",a:"Siempre deberá ser realizada por el gerente general.",ops:["Siempre deberá ser realizada por el gerente general.","Los intermediarios podrán contratar los servicios de un tercero para esta función.","La Alta Administración siempre será responsable por el adecuado funcionamiento.","En grupos financieros, esta función podrá ser ejercida por una unidad corporativa."],fb:"La función de gestión de riesgos NO es exclusiva del gerente general. Puede externalizarse o ejercerse por unidad corporativa."},
+{t:"CG2",q:"La interrupción del servicio a clientes por falla en sistemas tecnológicos representa:",a:"Riesgo operacional.",ops:["Riesgo de liquidez.","Riesgo de mercado.","Riesgo de crédito.","Riesgo operacional."],fb:"Fallas en sistemas tecnológicos son un ejemplo típico de RIESGO OPERACIONAL."},
+{t:"CG3",q:"Por tasa de interés libre de riesgo para un inversionista local, se entiende:",a:"La tasa de los instrumentos del Banco Central o del Gobierno.",ops:["La tasa de los instrumentos del Banco Central o del Gobierno.","La tasa que una entidad financiera fija para sus operaciones de derivados.","La tasa donde la institución financiera pierde cero.","La tasa de depósitos bancarios de corto plazo."],fb:"La tasa libre de riesgo local es la de los instrumentos del Banco Central o del Gobierno, considerados sin riesgo de crédito."},
+{t:"CG3",q:"La prima de Riesgo de Mercado, la podemos definir como:",a:"La tasa de rentabilidad adicional que cada inversionista exige por encima de la tasa libre de riesgo.",ops:["La tasa promedio histórica de los últimos cinco años de los bonos a cinco años.","La tasa actual para bonos soberanos a cinco años, menos la tasa que refleja el riesgo país.","La tasa de rentabilidad adicional que cada inversionista exige por encima de la tasa libre de riesgo.","La tasa de interés del bono soberano, menos la tasa de inflación."],fb:"Prima de riesgo de mercado = retorno esperado del mercado − tasa libre de riesgo. Es el premio exigido por asumir riesgo."},
+{t:"CG3",q:"¿Cuál NO corresponde a una ventaja para invertir en fondos mutuos?",a:"Todos los fondos mutuos aseguran el capital invertido.",ops:["La diversificación de las inversiones del fondo mutuo disminuye el riesgo.","Rápida liquidez para el inversionista.","Administración profesional de los recursos.","Todos los fondos mutuos aseguran el capital invertido."],fb:"NINGÚN fondo mutuo garantiza el capital. Los demás son ventajas reales. Trampa clásica del CAMV."},
+{t:"CG3",q:"El plazo de pago del rescate de un fondo mutuo dependerá de:",a:"El Reglamento Interno del Fondo.",ops:["El plazo en que la Administradora obtenga los recursos en el mercado financiero.","El plazo que determinen las bolsas de valores, en las que se transen las cuotas.","El Reglamento Interno del Fondo.","La valorización de mercado de los instrumentos de la cartera de inversiones del fondo."],fb:"El Reglamento Interno del Fondo es el documento rector que establece el plazo de rescate."},
+{t:"CG3",q:"¿Qué variable o precio se puede deducir en forma aproximada, a partir de las tasas de los BCP y BCU emitidos por el Banco Central?",a:"La estimación que el mercado realiza de la inflación.",ops:["La estimación que el mercado realiza del tipo de cambio.","La estimación que el mercado realiza del IMACEC.","La estimación que el mercado realiza de la inflación.","No se puede deducir ningún precio."],fb:"BCP (nominal) − BCU (real) ≈ inflación esperada (breakeven). Esta resta refleja la expectativa inflacionaria del mercado."},
+{t:"CG3",q:"La tasa de interés real resulta de:",a:"Descontar la inflación de la tasa de interés nominal.",ops:["La reinversión del capital.","Descontar la inflación de la tasa de interés nominal.","Ajustar los plazos de inversión de capital.","La variación del precio del dinero."],fb:"Tasa real ≈ tasa nominal − inflación (aproximación de Fisher). La tasa real refleja el poder de compra."},
+{t:"CG3",q:"El valor presente neto (VPN) de una inversión se puede definir como:",a:"El valor de la suma de los flujos de caja futuros actualizados a una tasa de descuento menos la inversión.",ops:["El valor de la suma de los flujos de caja futuros actualizados a una tasa de descuento.","El valor de la suma de los flujos de caja futuros actualizados a una tasa de descuento menos la inversión.","El valor que alcanzará la suma de los flujos de caja futuros considerando la tasa compuesta de rentabilidad.","El valor de la suma de los flujos de caja futuros."],fb:"VPN = VP(flujos futuros) − Inversión inicial. Si VPN > 0, el proyecto agrega valor."},
+{t:"CG3",q:"Una acción se clasifica como un instrumento de inversión:",a:"De renta variable, dado que no tiene un retorno fijo establecido por contrato, sino que depende de la marcha de la sociedad.",ops:["De renta mixta, ya que se pueden obtener siempre utilidades diferentes cada año.","De renta fija, ya que se establece en los estatutos el porcentaje de utilidades que se distribuirán como dividendos.","De renta creciente, debido a que las ganancias se generan por el aumento del precio de la acción.","De renta variable, dado que no tiene un retorno fijo establecido por contrato, sino que depende de la marcha de la sociedad."],fb:"Las acciones son renta VARIABLE: sus rendimientos (dividendos y precio) dependen del desempeño de la sociedad."},
+{t:"CG3",q:"Una caída sustancial en el valor del dólar que afecta adversamente el valor de las posiciones del intermediario de valores, corresponde a:",a:"Riesgo de mercado.",ops:["Riesgo de crédito.","Riesgo de liquidez.","Riesgo de tasa de interés.","Riesgo de mercado."],fb:"Variaciones en el tipo de cambio que afectan posiciones son riesgo de MERCADO (variación del precio de un activo financiero)."},
+{t:"CG3",q:"Si la tasa exigida por el mercado a un bono aumenta, entonces:",a:"El precio de mercado del bono disminuirá.",ops:["El precio de mercado del bono disminuirá.","El precio del mercado del bono aumentará.","El precio de mercado del bono se mantendrá invariable.","La rentabilidad del bono no tiene relación con el precio de mercado del bono."],fb:"Precio y tasa van en dirección OPUESTA. Relación fundamental de renta fija."},
+{t:"CG3",q:"Una manera de aumentar el PIB potencial de la economía nacional es:",a:"Aumentar la inversión en tecnología.",ops:["Reducir la inversión en educación.","Aumentar la inversión en tecnología.","Reducir la inversión en productividad.","Aumentar la inversión en publicidad."],fb:"El PIB potencial crece con inversión en factores productivos: tecnología, educación, productividad."},
+{t:"CG3",q:"La pendiente de la curva IS es:",a:"Negativa.",ops:["Negativa.","Positiva.","Cero.","Siempre igual a 1."],fb:"IS tiene pendiente negativa: a mayor tasa de interés, menor inversión → menor demanda agregada."},
+{t:"CG3",q:"Un mercado donde solo existe un vendedor y muchos compradores es un:",a:"Monopolio.",ops:["Oligopolio.","Monopolio.","Monopsonio.","Competencia Perfecta."],fb:"Monopolio = 1 vendedor, muchos compradores. Monopsonio = muchos vendedores, 1 comprador."},
+{t:"CG3",q:"Una institución financiera pierde USD 2.000 millones por mala aplicación del procedimiento para cubrir el riesgo de crédito. ¿Tipo de riesgo involucrado?",a:"Riesgo operacional.",ops:["Riesgo operacional.","Riesgo de crédito.","Riesgo de mercado.","Riesgo estratégico."],fb:"La falla está en el PROCEDIMIENTO (error operativo), no en el riesgo de crédito en sí. Es riesgo OPERACIONAL."},
+{t:"CG3",q:"Chile tiene 17M de habitantes, pob. activa 14,5M. 10% no quiere trabajar. Del 90% restante, 93% empleado y 7% no. ¿Tasa de desempleo?",a:"7,00%",ops:["4,20%","1,90%","16,30%","7,00%"],fb:"Tasa de desempleo = desempleados/fuerza laboral. El 7% del 90% que SÍ quiere trabajar = tasa de desempleo del 7%."},
+{t:"CG3",q:"Un amigo le presta $800 y pide $992 en 12 meses. ¿Tasa de interés simple mensual?",a:"2,00%",ops:["1,24%","1,50%","2,00%","1,81%"],fb:"Interés total = 992−800 = $192. Tasa simple = 192/(800×12) = 0,02 = 2% mensual."},
+{t:"CG3",q:"La tasa de interés libre de riesgo es una tasa que el mercado entiende que no posee:",a:"Riesgo de Crédito.",ops:["Riesgo de Crédito.","Riesgo Legal.","Riesgo Operacional.","Riesgo de Mercado."],fb:"Por definición, la tasa libre de riesgo no tiene riesgo de crédito (no hay posibilidad de impago del emisor)."},
+{t:"CG3",q:"Para obtener la mayor rentabilidad con tasas de interés al alza, conviene invertir a:",a:"Al menor plazo posible.",ops:["Al menor plazo posible.","A un año.","A diez años.","Al mayor plazo posible."],fb:"Con tasas al alza, invertir corto permite reinvertir pronto a tasas más altas. Largo plazo te bloquea en la tasa baja."},
+{t:"CG3",q:"Los especuladores no aportan nada a los mercados financieros, ya que solo buscan el lucro personal.",a:"Falso, permiten transferir el riesgo y proveen liquidez a los mercados.",ops:["Verdadero, puesto que son prescindibles.","Falso, permiten transferir el riesgo y proveen liquidez a los mercados.","Falso, son necesarios, pero solo en los mercados de monedas.","Falso, son necesarios pero solo en los mercados de renta fija."],fb:"Los especuladores asumen el riesgo que los hedgers quieren eliminar, proveen liquidez y mejoran la eficiencia del mercado."},
+{t:"CG3",q:"Si un cliente accionista minoritario pregunta por la caída del precio de una acción justo después de expirar la fecha de registro con derecho a dividendos, ¿qué responde?",a:"Que el precio de mercado, como es el valor presente de los dividendos futuros, deduce el dividendo a ser repartido próximamente.",ops:["Que el precio se vio afectado por un hecho externo a la Compañía.","Explicar que el precio disminuyó porque hubo una disminución en la demanda por la acción.","Que el precio de mercado, como es el valor presente de los dividendos futuros, deduce el dividendo a ser repartido próximamente.","Se trató de un hecho fortuito y sin fundamentos."],fb:"Al expirar la fecha de registro, el nuevo comprador ya no recibe el dividendo → el precio baja en ese monto (ex-dividend)."},
+{t:"CG3",q:"Si aumenta la demanda de BCP a cinco años, es muy probable que:",a:"Las tasas de los BCP a cinco años disminuyan.",ops:["Las tasas de los BCP a cinco años aumenten.","Las tasas de los BCU a cinco años aumenten.","Las tasas de los BCP a cinco años disminuyan.","Las tasas de los BCP a cinco años permanezcan invariables."],fb:"Mayor demanda de bonos → precio sube → tasa baja. Precio y tasa son inversos."},
+{t:"CG3",q:"Un cliente cambia un crédito a 2 años con interés compuesto 10% anual a interés simple. ¿Qué tasa simple anual ofrecer para mantener igual cobro?",a:"10,5%",ops:["9,0%","10,5%","10,0%","20%"],fb:"(1,10)²−1 = 21% total en 2 años compuesto. 21%/2 = 10,5% anual simple. La tasa simple es MAYOR que la compuesta equivalente."},
+{t:"CG3",q:"Si observa depósito en pesos a 1 año a 5,5% y otro idéntico en UF a 3%, ¿qué puede inferir?",a:"La tasa de inflación esperada a un año es aproximadamente un 2,5%.",ops:["La tasa de política monetaria esperada es 5,5%.","La tasa de inflación esperada a un año es aproximadamente un 2,5%.","La tasa de política monetaria esperada es de 8,5%.","La inflación esperada es algo inferior a un 2% anual."],fb:"Inflación breakeven = tasa nominal − tasa real = 5,5% − 3% = 2,5% esperada por el mercado."},
+{t:"CE1",q:"¿Cuál es el plazo mínimo para mantener la documentación de respaldo de las órdenes de los clientes?",a:"10 años.",ops:["10 años.","3 años.","5 años.","1 año."],fb:"Plazo de archivo de documentación de órdenes de clientes: 10 años."},
+{t:"CE1",q:"El intermediario debe poner a disposición del cliente, antes de cada producto o servicio:",a:"Los costos a cargo del cliente, riesgos de los productos o servicios y la existencia de beneficios indirectos que recibirá el intermediario por su actuar.",ops:["Los costos que serán de cargo del cliente y las existencias de beneficios indirectos que recibirá el intermediario.","Los costos y riesgos de los productos o servicios.","Los costos a cargo del cliente, riesgos de los productos o servicios y la existencia de beneficios indirectos que recibirá el intermediario por su actuar.","Los costos del intermediario, los riesgos y la existencia de beneficios indirectos que recibirá el cliente."],fb:"TRES elementos: (1) costos al cliente, (2) riesgos del producto, (3) beneficios indirectos que recibe el intermediario."},
+{t:"CE1",q:"Ante algún reclamo o conflicto entre el cliente y su intermediario de valores:",a:"El cliente debe presentar sus reclamos ante tribunales u otros organismos, o en los mecanismos establecidos por el intermediario.",ops:["El cliente debe ejercer su derecho solamente ante los tribunales ordinarios de justicia.","El cliente no tiene derecho de involucrar a los tribunales ordinarios de justicia.","El cliente debe presentar su reclamo en un máximo de 5 días hábiles ante la CMF.","El cliente debe presentar sus reclamos ante tribunales u otros organismos, o en los mecanismos establecidos por el intermediario."],fb:"El cliente tiene VARIAS vías: tribunales ordinarios, CMF, o mecanismo de resolución del propio intermediario."},
+{t:"CE1",q:"Una mayor aversión al riesgo implica que:",a:"Un inversionista prefiere un retorno inferior, pero más seguro.",ops:["El riesgo diversificable de un portafolio se elimina manteniendo el índice de mercado.","Un inversionista prefiere un retorno inferior, pero más seguro.","La inversión óptima en tiempos de crisis es mantener una posición larga en acciones.","El portafolio eficiente es un 50% en renta fija y un 50% en renta variable."],fb:"Un inversionista averso al riesgo SACRIFICA retorno por seguridad. Prefiere certeza a incertidumbre."},
+{t:"CE1",q:"Para ser inversionista calificado con inversiones entre UF 2.000 y 10.000 (NCG 216), ¿qué antecedente POR SÍ SOLO es suficiente?",a:"Ser ingeniero comercial y contar con un magíster en finanzas.",ops:["Contar con activos inmobiliarios por monto superior a UF 45.000.","Ser ingeniero comercial y contar con un magíster en finanzas.","Ser extranjero.","Durante los últimos 4 trimestres haber realizado 10 operaciones de compra y venta."],fb:"NCG 216: con inversiones 2.000-10.000 UF, el conocimiento financiero acreditado (título + postgrado) es suficiente POR SÍ SOLO."},
+{t:"CE2",q:"Los instrumentos de deuda son:",a:"Instrumentos financieros con flujos de pagos futuros prestablecidos.",ops:["Instrumentos financieros con flujos de pagos futuros prestablecidos.","Instrumentos financieros con flujos de pagos reajustables.","Instrumentos financieros con flujos a perpetuidad.","Instrumentos financieros con flujos de pagos indeterminados."],fb:"Los instrumentos de deuda (renta fija) tienen flujos PRESTABLECIDOS: el emisor se compromete a pagar montos y fechas definidas."},
+{t:"CE2",q:"Una característica principal de los mercados de derivados bursátiles es que:",a:"Son estandarizados.",ops:["Transan forwards.","Son estandarizados.","Transan swaps.","Son muy rentables."],fb:"Los derivados BURSÁTILES son estandarizados (futuros, opciones). Los forwards y swaps son OTC (no bursátiles)."},
+{t:"CE2",q:"El ahorro obligatorio del sistema de pensiones es administrado por:",a:"Las Administradoras de Fondos de Pensiones.",ops:["La Superintendencia de Pensiones.","El Ministerio del Trabajo.","Las Administradoras de Fondos de Pensiones.","Las Administradoras de Fondos de Cesantía."],fb:"Las AFP administran el ahorro previsional obligatorio. La Superintendencia de Pensiones solo fiscaliza."},
+{t:"CE2",q:"El valor par de un instrumento de renta fija en el mercado local corresponde a:",a:"El valor del capital no amortizado del instrumento incluidos los correspondientes intereses devengados y no pagados.",ops:["El valor del capital no amortizado del instrumento incluidos los correspondientes intereses devengados y no pagados.","El valor del capital no amortizado del instrumento.","El valor presente de los cupones pendientes de pago descontados a la tasa de mercado.","El valor del capital que se ha amortizado."],fb:"Valor par = capital no amortizado + intereses devengados no pagados. Es el valor \'teórico\' del instrumento."},
+{t:"CE2",q:"Una operación de venta con compromiso de retrocompra (repo/pacto) es aquella en que el intermediario:",a:"Vende a su cliente determinados valores de oferta pública, efectuando simultáneamente y con el mismo cliente, un compromiso de compra por los valores enajenados.",ops:["Vende a su cliente determinados valores de oferta pública, efectuando simultáneamente y con el mismo cliente, un compromiso de compra por los valores enajenados.","Se compromete ante un emisor a ofrecer vender dicho instrumento en el mercado a un precio acordado.","Promete vender al cliente y éste promete comprar determinados valores, acordando la fecha y el precio.","Vende a su cliente valores efectuando simultáneamente con un cliente distinto un compromiso de compra."],fb:"Pacto/repo: el intermediario vende hoy y se compromete a RECOMPRAR al MISMO cliente en fecha y precio pactados."},
+{t:"CE2",q:"Los instrumentos de intermediación financiera son emitidos para:",a:"Conseguir financiamiento de corto plazo.",ops:["Atraer nuevos accionistas.","Conseguir financiamiento de corto plazo.","Inyectar dinero a la economía.","Conseguir financiamiento de largo plazo."],fb:"IIF (PDBC, efectos de comercio, pagarés) son instrumentos de CORTO plazo. Los bonos son de largo plazo."},
+{t:"CE2",q:"El plazo de liquidación de transacciones de acciones bajo condición de liquidación contado normal es:",a:"El segundo día hábil bursátil siguiente, después de efectuadas.",ops:["El segundo día hábil bursátil siguiente, después de efectuadas.","El día hábil bursátil siguiente, después de efectuadas.","El día de su vencimiento, acordado en la transacción.","El tercer día hábil bursátil siguiente, después de efectuadas."],fb:"Contado normal (CN) = T+2. PH = mismo día, PM = día siguiente (T+1)."},
+{t:"CE2",q:"La cuenta de \'mandante individual\' en el DCV permite que:",a:"El cliente reciba información directamente del DCV.",ops:["El corredor tenga en forma separada la custodia de cuenta propia y la de terceros.","El cliente instruya al DCV para mover la custodia.","El corredor pueda prestar los valores de cliente.","El cliente reciba información directamente del DCV."],fb:"La cuenta de mandante individual permite al cliente relacionarse DIRECTAMENTE con el DCV y recibir información."},
+{t:"CE2",q:"¿Cuál NO es un instrumento de intermediación financiera?",a:"Bono en UF del Banco Central de Chile (BCU) a 5 años.",ops:["Pagaré descontable del Banco Central de Chile (PDBC) a 90 días.","Depósito a plazo fijo a 30 días.","Efecto de Comercio a 180 días.","Bono en UF del Banco Central de Chile (BCU) a 5 años."],fb:"El BCU es instrumento de LARGO plazo (5 años). Los IIF son de CORTO plazo (hasta 1 año)."},
+{t:"CE2",q:"Un exportador espera recibir USD en 3 meses. Para cubrir riesgo de moneda debe tomar:",a:"Venta de dólares forward a tres meses.",ops:["Venta de dólares forward a un mes.","Compra de UF forward a tres meses.","Venta de dólares forward a tres meses.","Compra de dólares forward a tres meses."],fb:"El exportador recibirá USD en 3 meses. Para cubrir riesgo de caída del USD, VENDE forward hoy al precio actual."},
+{t:"CE2",q:"Bono emitido a la par en enero 2015 a UF+4% anual se valoriza hoy a 102% de su valor par. Esto significa:",a:"Que la tasa de descuento (mercado) del bono es inferior al 4% real anual.",ops:["Que la tasa de descuento (mercado) del bono es inferior al 4% real anual.","Que la tasa de descuento (mercado) del bono es superior al 4% real anual.","Que la tasa de descuento (mercado) del bono es igual al 4% real anual.","Que pagó cupones con interés y reajuste."],fb:"Precio > par → tasa de mercado < tasa cupón (4%). Las tasas BAJARON desde la emisión."},
+{t:"CE2",q:"¿En cuál situación un intermediario de valores está expuesto a riesgo de crédito?",a:"Tener posiciones de cliente en derivados sin garantía.",ops:["Compra $10 millones en acciones de una compañía.","Tiene un pasivo contingente de $5 millones debido a un juicio.","Tener posiciones de cliente en derivados sin garantía.","Adquiere una plataforma computacional para clasificar clientes minoristas."],fb:"Derivados SIN GARANTÍA exponen al intermediario al riesgo de que el cliente no cumpla. Es riesgo de crédito clásico."},
+{t:"CE2",q:"En la fecha de vencimiento de un contrato forward, liquidable por compensación:",a:"Una parte debe hacer un pago en efectivo a la otra.",ops:["La posición compradora tiene que entregar el activo.","La posición vendedora tiene que hacer un pago en efectivo.","No es necesario hacer ningún pago.","Una parte debe hacer un pago en efectivo a la otra."],fb:"En liquidación POR COMPENSACIÓN (NDF) no hay entrega del activo. Solo se paga la diferencia."},
+{t:"CE2",q:"Para invertir en fondos mutuos diversificados globalmente en mercados emergentes, el mejor benchmark es:",a:"MSCI EMERGING MARKETS INDEX.",ops:["MEXBOL INDEX.","BOVESPA INDEX.","MERVAL INDEX.","MSCI EMERGING MARKETS INDEX."],fb:"MSCI EM es el único índice GLOBAL de mercados emergentes. Los demás son de un SOLO país."},
+{t:"CE2",q:"Dos bonos con mismo retorno (10%) y misma industria. Bono A: D=$100, P=$200, Act=$300. Bono B: D=$400, P=$200, Act=$600. ¿Menor riesgo de crédito?",a:"Bono A, Deuda/Patrimonio = 50%, Deuda/Activos = 33%.",ops:["Bono A, Deuda/Patrimonio = 50%, Deuda/Activos = 33%.","Bono B, Deuda/Patrimonio = 200%, Deuda/Activos = 67%.","Bono A, Deuda/Patrimonio = 100%, Deuda/Activos = 33%.","Bono B, Deuda/Patrimonio = 50%, Deuda/Activos = 3%."],fb:"Bono A: D/P=100/200=50%, D/Act=100/300=33%. Menor apalancamiento = MENOR riesgo de crédito."},
+{t:"CE2",q:"Objetivo maximizar portafolio de renta fija con expectativa de alza de tasas. Decisión:",a:"Disminuir la duración del portafolio.",ops:["Aumentar la proporción de renta variable en el portafolio.","Disminuir la duración del portafolio.","Aumentar la duración del portafolio.","Invertir en instrumentos de renta fija de largo plazo."],fb:"Si las tasas SUBEN, los precios de bonos bajan MÁS con mayor duración. Disminuir duración = menor pérdida."},
+{t:"CE3",q:"¿Cuál NO es requisito (Art. 165 LMV) para que intermediarios con info privilegiada hagan operaciones por cuenta de terceros?",a:"Que el cliente hubiese hecho operaciones de valores previamente con el intermediario.",ops:["Que el cliente hubiese hecho operaciones de valores previamente con el intermediario.","Que dichas operaciones sean por cuenta de terceros no relacionados a ellos.","Que la orden y condiciones específicas de la operación provengan del cliente.","Que no exista asesoría ni recomendación por parte del intermediario."],fb:"Art.165: el historial previo del cliente NO es requisito. Los requisitos son: 3º no relacionado + orden del cliente + sin asesoría."},
+{t:"CE3",q:"¿Cuál expresa mejor las prohibiciones establecidas por la Ley de Mercado de Valores?",a:"Efectuar transacciones en valores con el objeto de estabilizar, fijar o hacer variar artificialmente los precios.",ops:["Efectuar transacciones con el objeto de estabilizar los precios solo en casos de mecanismos engañosos.","Efectuar transacciones con el objeto de estabilizar los precios únicamente en oferta pública de valores nuevos.","Efectuar transacciones con el objeto de estabilizar los precios únicamente en oferta pública de valores anteriormente emitidos y que no han sido objeto de oferta pública.","Efectuar transacciones en valores con el objeto de estabilizar, fijar o hacer variar artificialmente los precios."],fb:"La prohibición es amplia: cualquier manipulación artificial de precios (estabilizar, fijar, variar) está prohibida."},
+{t:"CE3",q:"¿Cuál persona NO se presume por ley que tiene acceso a información privilegiada?",a:"Los directores, gerentes, administradores, ejecutivos principales y liquidadores de una subsidiaria o filial del emisor.",ops:["Los directores, gerentes, administradores, ejecutivos principales y liquidadores del emisor.","Los directores, gerentes, administradores, apoderados, ejecutivos principales, asesores financieros u operarios de intermediarios de valores.","Los directores, gerentes, administradores, ejecutivos principales y liquidadores de una subsidiaria o filial del emisor.","Las personas controladoras o sus representantes que realicen operaciones tendientes a la enajenación del control."],fb:"La presunción legal es directa al emisor, intermediarios y controladores. Las filiales/subsidiarias NO se presumen automáticamente."},
+{t:"CE3",q:"Corredor con información privilegiada recibe orden de cliente no relacionado. El corredor:",a:"Puede ejecutar la orden recibida, en la medida que la orden y las condiciones específicas de la operación provengan del cliente, sin asesoría ni recomendación del corredor.",ops:["Debe rechazar la orden recibida.","Debe rechazar la orden recibida e informar de dicha circunstancia a la CMF.","Puede ejecutar la orden recibida, en la medida que la orden y las condiciones específicas de la operación provengan del cliente, sin asesoría ni recomendación del corredor.","Antes de ejecutar la orden recibida, debe informar de esta circunstancia al cliente y solicitar la confirmación escrita de la orden."],fb:"Art. 165 LMV: PUEDE ejecutar órdenes de 3º no relacionados aunque tenga info privilegiada, si no hubo asesoría del corredor."},
+{t:"CE3",q:"Si se ha estado promoviendo la compra de una acción a través de informes y notas de prensa, la CMF:",a:"Puede iniciar una investigación para determinar intencionalidad de inducir la compra del valor.",ops:["No puede iniciar una investigación.","Puede iniciar una investigación para determinar intencionalidad de inducir la compra del valor.","Puede iniciar una investigación solo si alguien denuncia.","Puede iniciar una investigación solo si la información difundida es falsa."],fb:"La CMF puede actuar DE OFICIO (sin denuncia) ante indicios de inducción a la compra o venta de valores."},
+{t:"CG1",q:"¿A qué corresponde la categoría de riesgo N-2?",a:"Instrumentos con capacidad de pago susceptible de deteriorarse levemente ante posibles cambios en el emisor o la economía.",ops:["Instrumentos con la máxima capacidad de pago en corto plazo.","Instrumentos con capacidad de pago susceptible de deteriorarse levemente ante posibles cambios en el emisor o la economía.","Instrumentos en incumplimiento de pagos.","Instrumentos sin capacidad de pago."],fb:"N-1 es la mejor categoría de corto plazo. N-2 es buena pero algo más vulnerable a cambios."},
+{t:"CG1",q:"¿Qué sanción recibe un ente supervisado por la CMF (ex SVS) que comete una falta NO grave?",a:"Censura.",ops:["Multa.","Censura.","Revocación de autorización.","Presidio menor."],fb:"Orden de sanciones (leve a grave): Censura → Multa → Revocación. Para faltas no graves: censura."},
+{t:"CG1",q:"Cuando una S.A. efectúa una emisión liberada y un accionista tiene sus acciones prendadas, ¿qué ocurre con las crías?",a:"Quedan prendadas en los mismos términos que las acciones que dieron origen a las crías.",ops:["Se liberan automáticamente de la prenda.","Quedan prendadas en los mismos términos que las acciones que dieron origen a las crías.","El acreedor prendario debe liberarlas.","Van al acreedor prendario directamente."],fb:"El derecho real de prenda se extiende a las crías: las nuevas acciones siguen la suerte de las originales."},
+{t:"CG1",q:"¿Hasta cuánto tiempo puede la CMF suspender la oferta, cotizaciones o transacciones de un valor?",a:"Hasta 30 días, prorrogable hasta 120 días.",ops:["Hasta 15 días, prorrogable hasta 60 días.","Hasta 30 días, prorrogable hasta 120 días.","Hasta 60 días sin prórroga.","Hasta 90 días."],fb:"La CMF puede suspender hasta 30 días, con prórroga de hasta 120 días adicionales."},
+{t:"CG1",q:"En una OPA, ¿quiénes quedan sujetos a la fiscalización de la CMF?",a:"Las personas que efectúen ofertas públicas de adquisición de acciones, los organizadores y los administradores de la oferta.",ops:["Solo el oferente.","Las personas que efectúen ofertas públicas de adquisición de acciones, los organizadores y los administradores de la oferta.","Solo los accionistas que aceptan la oferta.","Únicamente los bancos involucrados."],fb:"La CMF fiscaliza a TODOS los involucrados en la OPA: oferente, organizadores y administradores."},
+{t:"CG1",q:"El intermediario que participa en la compraventa de valores asume la obligación de:",a:"Quedar personalmente obligado a pagar el precio de la compra o hacer entrega de los valores vendidos.",ops:["Solo transmitir la orden sin responsabilidad patrimonial.","Quedar personalmente obligado a pagar el precio de la compra o hacer entrega de los valores vendidos.","Responder solo si existe garantía del cliente.","Actuar solo como mero intermediario sin obligaciones."],fb:"El corredor tiene responsabilidad PERSONAL por el cumplimiento de la operación (pago o entrega)."},
+{t:"CG1",q:"¿En qué consiste un CDV (Certificado de Depósito de Valores)?",a:"Títulos nominativos y transferibles emitidos en Chile por un depositario nacional contra el depósito de títulos de un emisor extranjero.",ops:["Certificados emitidos por el Banco Central.","Títulos nominativos y transferibles emitidos en Chile por un depositario nacional contra el depósito de títulos de un emisor extranjero.","Recibos de depósitos a plazo bancarios.","Títulos de deuda del fisco chileno."],fb:"Los CDV son el equivalente chileno de los ADR: permiten transar valores extranjeros en el mercado local."},
+{t:"CG1",q:"La aceptación de la OPA por parte de los accionistas:",a:"Es retractable total o parcialmente hasta antes del vencimiento del plazo o sus prórrogas.",ops:["Es irrevocable una vez entregadas las acciones.","Es retractable total o parcialmente hasta antes del vencimiento del plazo o sus prórrogas.","Solo puede retractarse dentro de los primeros 5 días.","No puede retractarse en ningún caso."],fb:"La aceptación es RETRACTABLE hasta antes del vencimiento del plazo. Protege al accionista que cambia de opinión."},
+{t:"CG1",q:"La disminución del capital social de una S.A. abierta requiere:",a:"Aprobación con dos terceras partes de los accionistas con derecho a voto.",ops:["Mayoría simple de accionistas presentes.","Aprobación con dos terceras partes de los accionistas con derecho a voto.","75% de los accionistas.","Unanimidad del directorio."],fb:"Reducir capital = quórum reforzado: 2/3 de las acciones con derecho a voto (junta extraordinaria)."},
+{t:"CG1",q:"Las S.A. abiertas deben distribuir como dividendo a prorrata al menos:",a:"30% de las utilidades líquidas del ejercicio.",ops:["10% de las utilidades.","20% de las utilidades.","30% de las utilidades líquidas del ejercicio.","50% de las utilidades."],fb:"Dividendo mínimo obligatorio S.A. abierta: 30% de las utilidades líquidas, siempre que no haya pérdidas acumuladas."},
+{t:"CG1",q:"Según la Ley 19.913, ¿qué se entiende por operación sospechosa?",a:"Todo acto o transacción que resulte inusual o carente de justificación económica o jurídica aparente, aislada o reiterada.",ops:["Solo operaciones en efectivo sobre 450 UF.","Todo acto o transacción que resulte inusual o carente de justificación económica o jurídica aparente, aislada o reiterada.","Transferencias internacionales sin documentación completa.","Solo operaciones entre partes relacionadas."],fb:"Operación sospechosa: inusual O carente de justificación económica/jurídica. Definición amplia de la UAF."},
+{t:"CG1",q:"¿Sobre qué monto en efectivo debe reportarse un ROE (Reporte de Operación en Efectivo) a la UAF?",a:"Sobre 450 UF.",ops:["Sobre 100 UF.","Sobre 450 UF.","Sobre $10.000.000.","Sobre 1.000 UF."],fb:"Umbral del ROE: 450 UF. Toda operación en efectivo sobre ese monto debe reportarse a la UAF."},
+{t:"CG1",q:"Según la LMV, se presume que poseen información privilegiada:",a:"Los directores, gerentes, administradores, ejecutivos principales y liquidadores del emisor.",ops:["Solo los directores.","Los directores, gerentes, administradores, ejecutivos principales y liquidadores del emisor.","Todos los empleados de la empresa.","Solo el gerente general."],fb:"La LMV presume información privilegiada en el círculo interno: directores, gerentes, ejecutivos principales y liquidadores."},
+{t:"CG1",q:"Si el controlador adquiere más del 95% de las acciones de una S.A. Abierta, los minoritarios:",a:"Tienen derecho a retiro.",ops:["No tienen ningún derecho.","Tienen derecho a retiro.","Pierden automáticamente sus acciones.","Deben vender obligatoriamente al controlador."],fb:"Umbral del 95%: gatilla el derecho a RETIRO del accionista minoritario (puede vender su parte al precio de mercado)."},
+{t:"CG1",q:"Si una persona alcanza o supera los 2/3 de las acciones con derecho a voto de una S.A. abierta:",a:"Debe realizar una OPA por las acciones restantes dentro de 30 días.",ops:["No debe hacer nada.","Debe realizar una OPA por las acciones restantes dentro de 30 días.","Debe solicitar autorización a la junta.","Debe disolver la sociedad."],fb:"OPA obligatoria al alcanzar 2/3 de las acciones. Plazo: 30 días desde la adquisición."},
+{t:"CG1",q:"La LMV define intermediarios de valores como:",a:"Toda persona natural o jurídica que se dedica a las operaciones de corretaje de valores.",ops:["Solo las corredoras de bolsa inscritas.","Toda persona natural o jurídica que se dedica a las operaciones de corretaje de valores.","Solo los agentes de valores.","Las entidades bancarias exclusivamente."],fb:"Definición amplia: incluye corredores de bolsa y agentes de valores (personas naturales o jurídicas)."},
+{t:"CG1",q:"Los bancos y sociedades financieras, como intermediarios:",a:"No están obligados a inscribirse en el Registro de Corredores de Bolsa para intermediar, según sus facultades de la Ley General de Bancos.",ops:["Deben inscribirse como cualquier corredor.","No están obligados a inscribirse en el Registro de Corredores de Bolsa para intermediar, según sus facultades de la Ley General de Bancos.","Solo pueden intermediar renta fija.","Necesitan autorización especial caso a caso."],fb:"Los bancos tienen facultades propias de la Ley General de Bancos: no necesitan inscripción adicional como corredor."},
+{t:"CG1",q:"La OPA deberá estar dirigida a:",a:"Todos los accionistas de la sociedad o la serie de que se trate.",ops:["Solo a los accionistas mayoritarios.","Todos los accionistas de la sociedad o la serie de que se trate.","Solo a los accionistas con derecho a voto.","Únicamente a inversionistas institucionales."],fb:"La OPA debe dirigirse a TODOS los accionistas de la serie, asegurando trato igualitario."},
+{t:"CG1",q:"La CMF NO podrá aplicar multa a un infractor luego de transcurridos:",a:"4 años desde la fecha en que hubiere terminado de cometerse el hecho.",ops:["2 años.","4 años desde la fecha en que hubiere terminado de cometerse el hecho.","5 años.","1 año."],fb:"Prescripción para APLICAR la multa: 4 años. Para COBRARLA: 2 años desde que se hace exigible."},
+{t:"CG1",q:"La vigencia de la OPA será:",a:"Establecida por el oferente, no inferior a 20 días ni superior a 30 días.",ops:["La que determine la CMF.","Establecida por el oferente, no inferior a 20 días ni superior a 30 días.","No inferior a 10 días ni superior a 20 días.","La que acuerden las partes sin restricción."],fb:"El oferente fija el plazo entre 20 y 30 días. No menos, no más."},
+{t:"CG1",q:"Los intermediarios de valores deben constituir una garantía inicial mínima de:",a:"4.000 UF.",ops:["2.000 UF.","4.000 UF.","6.000 UF.","10.000 UF."],fb:"Garantía inicial previa al desempeño: 4.000 UF. Es distinta del patrimonio mínimo (6.000 o 14.000 UF)."},
+{t:"CG1",q:"Para operar por cuenta propia, los corredores deben acreditar un patrimonio mínimo de:",a:"14.000 UF.",ops:["6.000 UF.","10.000 UF.","14.000 UF.","20.000 UF."],fb:"Patrimonio para operar por cuenta propia: 14.000 UF. Sin cuenta propia: 6.000 UF."},
+{t:"CG1",q:"Quienes proporcionaren maliciosamente antecedentes o certifiquen hechos falsos a la CMF, bolsas o al público tendrán pena de:",a:"Presidio menor en su grado medio a presidio mayor en su grado mínimo.",ops:["Solo multa pecuniaria.","Presidio menor en su grado medio a presidio mayor en su grado mínimo.","Solo censura administrativa.","Inhabilitación perpetua sin pena privativa."],fb:"Es un delito penal: presidio menor en grado medio a presidio mayor en grado mínimo (entre 541 días y 10 años)."},
+{t:"CG1",q:"Respecto a las S.A. abiertas, ¿qué es un \'hecho esencial\'?",a:"Información que un hombre juicioso consideraría importante para sus decisiones de inversión.",ops:["Solo los resultados trimestrales.","Información que un hombre juicioso consideraría importante para sus decisiones de inversión.","Cualquier comunicado interno de la empresa.","Solo los acuerdos del directorio."],fb:"Hecho esencial: el estándar del \'hombre juicioso\'. Información que influiría en decisiones de inversión."},
+{t:"CG1",q:"Se inscriben en el Registro de Valores de la CMF, entre otros:",a:"Los emisores de valores de oferta pública y los valores que sean objeto de oferta pública.",ops:["Solo los emisores nacionales.","Los emisores de valores de oferta pública y los valores que sean objeto de oferta pública.","Solo los valores listados en bolsa.","Únicamente los bonos corporativos."],fb:"En el Registro de Valores se inscriben tanto los EMISORES como los VALORES que serán de oferta pública."},
+{t:"CG1",q:"Son inversionistas institucionales:",a:"Los bancos, sociedades financieras, compañías de seguros, entidades de reaseguro y administradoras de fondos autorizados por ley.",ops:["Solo las AFP.","Los bancos, sociedades financieras, compañías de seguros, entidades de reaseguro y administradoras de fondos autorizados por ley.","Solo las corredoras de bolsa.","Las personas naturales de alto patrimonio."],fb:"Lista taxativa: bancos, sociedades financieras, compañías de seguros, reaseguradoras y administradoras de fondos."},
+{t:"CG1",q:"Toda persona perjudicada por uso de información privilegiada tiene derecho a:",a:"Demandar indemnización, con prescripción de 4 años desde que la información se divulgó al mercado.",ops:["Solo denunciar a la CMF.","Demandar indemnización, con prescripción de 4 años desde que la información se divulgó al mercado.","Exigir reparación dentro de 1 año.","Solo obtener disculpas públicas."],fb:"Acción indemnizatoria: prescribe en 4 AÑOS desde que la información privilegiada fue divulgada."},
+{t:"CG1",q:"Un corredor será expulsado como miembro de una bolsa cuando:",a:"Habiendo sido suspendido tres veces, incurre nuevamente en causal de suspensión.",ops:["Tiene una multa impaga.","Habiendo sido suspendido tres veces, incurre nuevamente en causal de suspensión.","Pierde el 50% de su patrimonio.","Un cliente lo demanda."],fb:"Regla: 3 suspensiones + reincidencia = expulsión. La reincidencia tras varias suspensiones es determinante."},
+{t:"CG1",q:"Ningún corredor podrá poseer directa o indirectamente más de:",a:"10% de la propiedad de la bolsa de valores.",ops:["5%.","10% de la propiedad de la bolsa de valores.","20%.","25%."],fb:"Límite de concentración en bolsas: ningún corredor puede tener más del 10% de la propiedad de la bolsa."},
+{t:"CG1",q:"Un instrumento desmaterializado se refiere a aquel:",a:"En que el emisor no necesita emitir materialmente el título que acredita la propiedad.",ops:["Que se emite solo en moneda extranjera.","En que el emisor no necesita emitir materialmente el título que acredita la propiedad.","Que tiene rentabilidad negativa.","Que no paga cupones."],fb:"Desmaterializado = no hay título físico. Todo se registra electrónicamente (ej: en el DCV)."},
+{t:"CG1",q:"La LMV define valores como:",a:"Cualesquiera títulos transferibles incluyendo acciones, opciones, bonos, debentures, cuotas de fondos mutuos, efectos de comercio.",ops:["Solo acciones y bonos.","Cualesquiera títulos transferibles incluyendo acciones, opciones, bonos, debentures, cuotas de fondos mutuos, efectos de comercio.","Solo instrumentos de deuda.","Únicamente los inscritos en la CMF."],fb:"Definición AMPLIA: incluye acciones, opciones, bonos, debentures, cuotas FM, efectos de comercio, planes de ahorro."},
+{t:"CG1",q:"Las notificaciones que practique la CMF se harán por:",a:"Carta certificada.",ops:["Correo electrónico.","Publicación en el Diario Oficial.","Carta certificada.","Notificación personal."],fb:"La CMF notifica sus resoluciones por CARTA CERTIFICADA."},
+{t:"CG1",q:"La acción de cobro de una multa de la CMF prescribe en:",a:"2 años desde que se hizo exigible.",ops:["4 años.","2 años desde que se hizo exigible.","1 año.","5 años."],fb:"Prescripción para COBRAR la multa: 2 años. Prescripción para APLICARLA: 4 años."},
+{t:"CG1",q:"Para reclamar contra normas ilegales de la CMF, se recurre ante:",a:"Corte de Apelaciones de Santiago.",ops:["Tribunal Constitucional.","Corte de Apelaciones de Santiago.","Contraloría General de la República.","Ministerio de Hacienda."],fb:"Las reclamaciones de ilegalidad contra normas CMF se presentan ante la Corte de Apelaciones de Santiago."},
+{t:"CG1",q:"El monto de las multas aplicadas por la CMF deben pagarse en el plazo de:",a:"10 días contados desde que la CMF notifique su resolución.",ops:["5 días.","10 días contados desde que la CMF notifique su resolución.","30 días.","60 días."],fb:"Plazo para pagar la multa: 10 días desde la notificación."},
+{t:"CG1",q:"El afectado por una multa CMF puede reclamar ante el juez de letras civil previa consignación del:",a:"25% del monto total de la multa.",ops:["10% del monto de la multa.","25% del monto total de la multa.","50% del monto de la multa.","100% del monto de la multa."],fb:"Consignación previa para reclamar una multa CMF: 25% del monto total."},
+{t:"CG1",q:"El modelo de prevención de delitos (Ley 20.393) debe contener, a lo menos:",a:"Designación de encargado de prevención, definición de sus facultades y sistema de prevención de delitos.",ops:["Solo un código de ética.","Designación de encargado de prevención, definición de sus facultades y sistema de prevención de delitos.","Solo auditoría interna anual.","Un comité de ética solamente."],fb:"Tres pilares del modelo: (1) encargado designado, (2) sus facultades y medios, (3) sistema de prevención."},
+{t:"CG1",q:"Circunstancia AGRAVANTE de responsabilidad penal de una persona jurídica:",a:"Haber sido condenada por el mismo delito dentro de los 5 años anteriores.",ops:["Tener menos de 50 empleados.","Haber sido condenada por el mismo delito dentro de los 5 años anteriores.","Ser una empresa extranjera.","No tener oficial de cumplimiento."],fb:"Reincidencia dentro de 5 años es AGRAVANTE en la Ley 20.393 de responsabilidad penal de PJ."},
+{t:"CG1",q:"Las penas aplicables a personas jurídicas por delitos de lavado incluyen:",a:"Disolución de la persona jurídica y prohibición de celebrar actos con organismos del Estado.",ops:["Solo multas económicas.","Disolución de la persona jurídica y prohibición de celebrar actos con organismos del Estado.","Solo inhabilitación temporal de directivos.","Únicamente clausura del establecimiento."],fb:"Penas graves: disolución, cancelación de personalidad jurídica, prohibición de contratar con el Estado, multa."},
+{t:"CG1",q:"Toda persona que pretenda tomar el control de una S.A. abierta debe comunicarlo a:",a:"CMF, bolsas donde se transan los valores y a la sociedad objetivo.",ops:["Solo a la CMF.","CMF, bolsas donde se transan los valores y a la sociedad objetivo.","Solo a la sociedad objetivo.","Solo a la bolsa donde se transe la acción."],fb:"Comunicación triple: CMF + bolsas + sociedad objetivo (y sus controladas/controladoras)."},
+{t:"CG1",q:"Los días sábado, según normas de entidades de depósito y custodia de valores:",a:"No se consideran hábiles.",ops:["Se consideran hábiles como cualquier día.","No se consideran hábiles.","Se consideran hábiles solo hasta mediodía.","Dependen de cada empresa."],fb:"Los sábados NO son días hábiles para efectos de las operaciones del DCV."},
+{t:"CG1",q:"El contrato de emisión de bonos podrá establecer que la emisión sea:",a:"Un monto fijo o línea de bonos.",ops:["Solo monto fijo.","Un monto fijo o línea de bonos.","Solo línea de bonos.","Solo obligaciones convertibles."],fb:"Dos modalidades: (1) monto fijo o (2) línea de bonos (permite emisiones sucesivas dentro de un tope)."},
+{t:"CG1",q:"Los dividendos declarados corresponden a los accionistas inscritos:",a:"Al quinto día hábil anterior a la fecha de pago.",ops:["Al momento del pago.","Al quinto día hábil anterior a la fecha de pago.","Al cierre del ejercicio.","Al momento de la junta."],fb:"Registro de corte: quinto día hábil ANTERIOR a la fecha de pago del dividendo."},
+{t:"CG1",q:"A qué corresponde un dividendo eventual:",a:"A la parte de las utilidades no destinada como mínimo obligatorio ni adicional, sino a ser pagada en ejercicios futuros.",ops:["Al dividendo mínimo del 30%.","A la parte de las utilidades no destinada como mínimo obligatorio ni adicional, sino a ser pagada en ejercicios futuros.","A un dividendo en acciones.","Al dividendo de liquidación."],fb:"Dividendo eventual: utilidades retenidas disponibles para pago FUTURO, decidido por la junta cuando estime conveniente."},
+{t:"CG1",q:"Si una empresa emite 1 acción por cada 4 ya emitidas, ¿cuántas OSA tendrá un accionista con 1.000 acciones?",a:"250",ops:["100","250","400","1.000"],fb:"OSA (opciones de suscripción de acciones): 1 por cada 4 poseídas. 1.000/4 = 250."},
+{t:"CG1",q:"Las juntas ordinarias de accionistas se celebran:",a:"Una vez al año en la época fija que determinen los estatutos.",ops:["Cuando lo convoque el directorio.","Una vez al año en la época fija que determinen los estatutos.","Cada 6 meses.","Cuando lo solicite el 10% de los accionistas."],fb:"Juntas ordinarias: anuales y obligatorias. Las extraordinarias se convocan para materias especiales."},
+{t:"CG2",q:"¿Qué se entiende por riesgo operacional?",a:"Riesgo de sufrir pérdidas por fallas en procedimientos, controles, sistemas de información, integridad funcionaria o causas externas.",ops:["Riesgo de variaciones en precios de mercado.","Riesgo de sufrir pérdidas por fallas en procedimientos, controles, sistemas de información, integridad funcionaria o causas externas.","Riesgo de incumplimiento de la contraparte.","Riesgo de no poder liquidar activos rápidamente."],fb:"Riesgo operacional = fallas internas (procesos, sistemas, personas) o eventos externos."},
+{t:"CG2",q:"¿Cuál afirmación expresa mejor el concepto de riesgo?",a:"La potencialidad que eventos esperados, probables o no anticipados puedan producir efectos negativos en el capital o ingresos de la empresa.",ops:["La varianza de los retornos históricos.","La potencialidad que eventos esperados, probables o no anticipados puedan producir efectos negativos en el capital o ingresos de la empresa.","La probabilidad de pérdida en escenarios de estrés.","La volatilidad anualizada de los precios de mercado."],fb:"El riesgo es la POTENCIALIDAD de efectos negativos. Abarca eventos esperados, probables o inesperados."},
+{t:"CG2",q:"El indicador de liquidez general mide:",a:"Los recursos disponibles y valores por cobrar a 7 días respecto de las obligaciones por pagar a 7 días.",ops:["La razón corriente de la empresa.","Los recursos disponibles y valores por cobrar a 7 días respecto de las obligaciones por pagar a 7 días.","El patrimonio líquido versus el monto de cobertura.","La solvencia a largo plazo."],fb:"Indicador de liquidez general: cobertura INMEDIATA a 7 días. Ratio ≥ 1."},
+{t:"CG2",q:"En el cálculo del patrimonio depurado se rebajan del patrimonio contable, entre otros:",a:"Activos intangibles, activos para garantizar obligaciones de terceros y 20% del saldo de deudores por intermediación.",ops:["Solo activos intangibles.","Activos intangibles, activos para garantizar obligaciones de terceros y 20% del saldo de deudores por intermediación.","Solo activos de baja liquidez.","El 50% del saldo de cuentas por cobrar."],fb:"El patrimonio depurado excluye activos no líquidos o comprometidos. Tres componentes típicos."},
+{t:"CG2",q:"El sistema de gestión de riesgo de intermediarios debe tener como propósito general:",a:"Gestionar eficazmente los riesgos financieros, operacionales y de cumplimiento normativo.",ops:["Maximizar la rentabilidad de la cartera propia.","Gestionar eficazmente los riesgos financieros, operacionales y de cumplimiento normativo.","Reducir el capital mínimo requerido.","Reportar mensualmente a la CMF."],fb:"Tres dimensiones del sistema de gestión de riesgo: financieros + operacionales + cumplimiento normativo."},
+{t:"CG2",q:"VaR de 100 puntos base de una posición de $4.500.000 (1.000 cuotas a $5.000 c/u):",a:"$50.000",ops:["$4.500","$45.000","$50.000","$450.000"],fb:"VaR 100 pb = valor de la posición × 1% = $5.000 × 1.000 × 0,01 = $50.000."},
+{t:"CG2",q:"Un mal manejo del riesgo operacional puede generar:",a:"Problemas de liquidez, afectar el riesgo de crédito y el riesgo de mercado.",ops:["Solo problemas operativos aislados.","Problemas de liquidez, afectar el riesgo de crédito y el riesgo de mercado.","Solo pérdidas menores de eficiencia.","Únicamente demoras en reportes."],fb:"El riesgo operacional es TRANSVERSAL: sus fallas contagian a los otros riesgos (liquidez, crédito, mercado)."},
+{t:"CG2",q:"Respecto al cálculo del monto de cobertura patrimonial de acciones, la CMF determinó:",a:"Se considera el precio promedio ponderado del último día con transacción bursátil, si fue por monto superior a 10 UF.",ops:["Se considera el precio de cierre del último día hábil.","Se considera el precio promedio ponderado del último día con transacción bursátil, si fue por monto superior a 10 UF.","Se considera el valor contable de la acción.","Se considera un precio teórico calculado por la CMF."],fb:"Valorización: precio promedio ponderado del último día con transacción relevante (>10 UF)."},
+{t:"CG2",q:"El pasivo exigible del intermediario no podrá ser superior en:",a:"Más de 20 veces a su patrimonio líquido.",ops:["Más de 5 veces al patrimonio líquido.","Más de 10 veces al patrimonio líquido.","Más de 20 veces a su patrimonio líquido.","Más de 50 veces al patrimonio líquido."],fb:"Razón de endeudamiento: PE ≤ 20 × PL. Límite prudencial para los intermediarios."},
+{t:"CG2",q:"Los intermediarios de valores deberán contar con un Manual de Gestión de Riesgos que:",a:"Debe ser aprobado por la Alta Administración, al igual que sus modificaciones.",ops:["Solo necesita aprobación del gerente general.","Debe ser aprobado por la Alta Administración, al igual que sus modificaciones.","Es opcional para corredoras pequeñas.","Debe ser aprobado por la CMF previamente."],fb:"El Manual de Gestión de Riesgos debe ser aprobado por la ALTA ADMINISTRACIÓN (directorio o equivalente)."},
+{t:"CG2",q:"Al analizar el comportamiento de los precios de los activos financieros se encuentra que generalmente:",a:"Siguen una distribución normal.",ops:["Siguen una distribución uniforme.","Siguen una distribución normal.","Son completamente aleatorios sin distribución.","Siguen una distribución exponencial."],fb:"Supuesto clásico: los retornos (no los precios) siguen aproximadamente una distribución NORMAL. Base del VaR paramétrico."},
+{t:"CG2",q:"El backtesting es un método que permite medir:",a:"La exactitud y capacidad predictiva del modelo VaR.",ops:["La calidad de los datos históricos.","La exactitud y capacidad predictiva del modelo VaR.","La rentabilidad esperada del portafolio.","La correlación entre activos."],fb:"Backtesting: compara estimaciones del VaR con resultados reales para validar el modelo de riesgo."},
+{t:"CG2",q:"El valor en riesgo describe:",a:"Un modelo estadístico que mide pérdidas potenciales de un instrumento o cartera, en condiciones normales, en un intervalo de tiempo y con probabilidad estimada.",ops:["La pérdida máxima garantizada del portafolio.","Un modelo estadístico que mide pérdidas potenciales de un instrumento o cartera, en condiciones normales, en un intervalo de tiempo y con probabilidad estimada.","La desviación estándar anualizada.","El retorno esperado ajustado por riesgo."],fb:"VaR: modelo estadístico que estima pérdidas potenciales en condiciones NORMALES de mercado."},
+{t:"CG2",q:"Las calificaciones de riesgo de crédito de un emisor de deuda responden a factores que inciden en:",a:"La solvencia del emisor.",ops:["La liquidez del mercado.","La solvencia del emisor.","El tipo de cambio.","La política monetaria."],fb:"Calificación de riesgo de crédito del EMISOR = evaluación de su SOLVENCIA global."},
+{t:"CG2",q:"Ante dos alternativas de inversión con el mismo rendimiento esperado, un inversionista debe elegir:",a:"La de menor volatilidad en sus retornos.",ops:["La de mayor plazo.","La de menor volatilidad en sus retornos.","La de mayor volatilidad.","La que tenga menor liquidez."],fb:"Principio de dominancia: igual retorno → preferir MENOR volatilidad (menor riesgo)."},
+{t:"CG2",q:"La contraposición de intereses es un factor mitigante de los riesgos:",a:"Operacionales.",ops:["De crédito.","Operacionales.","De mercado.","De liquidez."],fb:"Contraposición de intereses (segregación de funciones) mitiga riesgos OPERACIONALES (fraudes, errores)."},
+{t:"CG2",q:"Un mercado con profundidad NO es un mercado con:",a:"Bajo número de transacciones.",ops:["Alto volumen transado.","Bajo número de transacciones.","Muchos participantes.","Información transparente."],fb:"Un mercado profundo tiene MUCHAS transacciones. Si hay pocas, NO es profundo."},
+{t:"CG2",q:"La duración modificada es igual a la duración de Macaulay:",a:"Dividida por (uno más la TIR del bono).",ops:["Multiplicada por (1 + TIR).","Dividida por (uno más la TIR del bono).","Menos 1.","Al cuadrado."],fb:"Dur. Modificada = Dur. Macaulay / (1 + TIR). Mide sensibilidad % del precio a cambios en la tasa."},
+{t:"CG2",q:"Manteniendo constante el resto de factores, el riesgo de tasa de interés de un bono con cupones es MAYOR cuando su:",a:"Madurez es mayor.",ops:["Madurez es mayor.","Cupón es mayor.","TIR es mayor.","Volatilidad es menor."],fb:"Mayor plazo (madurez) = mayor sensibilidad a cambios en tasas = mayor riesgo de tasa de interés."},
+{t:"CG2",q:"La duración de un bono está POSITIVAMENTE correlacionada con:",a:"Su madurez.",ops:["Su tasa cupón.","Su TIR.","Su madurez.","La frecuencia de pago de cupones."],fb:"Correlación POSITIVA: mayor madurez → mayor duración. Cupón y TIR tienen correlación NEGATIVA."},
+{t:"CG2",q:"La duración de un bono está NEGATIVAMENTE correlacionada con:",a:"Tasa cupón y TIR.",ops:["Su madurez.","Tasa cupón y TIR.","El plazo restante.","El valor nominal."],fb:"Mayor cupón/TIR → flujos anticipados tienen mayor peso → duración menor."},
+{t:"CG2",q:"¿Cuál bono tiene la MAYOR duración?",a:"Madurez 20 años, cupón 0%.",ops:["5 años cupón 8%.","10 años cupón 6%.","15 años cupón 4%.","Madurez 20 años, cupón 0%."],fb:"Cero cupón de largo plazo: duración = madurez. A mayor plazo y menor cupón, mayor duración."},
+{t:"CG2",q:"¿Cuál bono tiene MENOR volatilidad de precio?",a:"5 años, tasa cupón 14%.",ops:["5 años, tasa cupón 14%.","10 años, tasa cupón 8%.","15 años, tasa cupón 6%.","20 años, tasa cupón 4%."],fb:"Menor duración = menor volatilidad. El bono corto con cupón alto tiene la menor duración."},
+{t:"CG2",q:"El propósito básico de la inmunización es:",a:"Producir cero riesgo neto de tasa de interés compensando riesgo de precio con riesgo de reinversión.",ops:["Maximizar la TIR de la cartera.","Eliminar el riesgo de crédito.","Producir cero riesgo neto de tasa de interés compensando riesgo de precio con riesgo de reinversión.","Minimizar la duración total."],fb:"Inmunización: igualar la duración del portafolio con el horizonte de inversión, compensando los dos riesgos opuestos."},
+{t:"CG2",q:"Un bono 15 años, cupón 8%, TIR 10%, duración 8,05 años. Si la tasa cambia 25 pb, ¿cuánto varía el precio?",a:"1,82%",ops:["0,91%","1,82%","2,50%","0,25%"],fb:"Dur. Modificada ≈ 8,05/1,10 = 7,32. ΔP% ≈ 7,32 × 0,0025 ≈ 1,83%."},
+{t:"CG2",q:"Si X es el monto máximo de pérdida autorizado en un horizonte temporal, con margen de error 1% en condiciones normales:",a:"X es el VaR.",ops:["X es la desviación estándar.","X es el VaR.","X es la volatilidad implícita.","X es el stop-loss."],fb:"El VaR expresa justamente esto: pérdida máxima tolerable en un horizonte, con un nivel de confianza dado."},
+{t:"CG2",q:"Un buen ejemplo de pérdidas atribuibles a riesgo de mercado son:",a:"Pérdidas por el movimiento del tipo de cambio.",ops:["Pérdidas por incumplimiento de un deudor.","Pérdidas por el movimiento del tipo de cambio.","Pérdidas por fallas en sistemas TI.","Pérdidas por fraude interno."],fb:"Movimientos de precios (tipo de cambio, tasas, acciones) son riesgo de MERCADO."},
+{t:"CG2",q:"¿En qué consiste el control marca al mercado?",a:"Refleja la valorización diaria de los activos y pasivos financieros.",ops:["Es un control mensual de cumplimiento.","Refleja la valorización diaria de los activos y pasivos financieros.","Es una auditoría trimestral.","Mide solo las posiciones largas."],fb:"Mark-to-market: valorización DIARIA a precios de mercado. Principio clave de gestión de riesgo."},
+{t:"CG3",q:"Una inversión de $1.000.000 entrega $1.250.000 en 3 años. ¿Retorno anual efectivo?",a:"7,72%",ops:["7,00%","7,72%","8,00%","6,90%"],fb:"(1.250.000/1.000.000)^(1/3) − 1 = 1,25^0,333 − 1 ≈ 7,72% anual."},
+{t:"CG3",q:"Un bono con cupones mensuales tiene TEA (Tasa Efectiva Anual) de 12,46%. ¿Tasa nominal?",a:"11,80%",ops:["12,46%","12,00%","11,80%","12,20%"],fb:"Tasa mensual = (1,1246)^(1/12)−1 ≈ 0,9833%. Tasa nominal anual = 0,9833% × 12 ≈ 11,80%."},
+{t:"CG3",q:"Interés simple de un préstamo de $1.000.000 a 4 años al 10% anual:",a:"$400.000",ops:["$1.400.000","$1.100.000","$400.000","$100.000"],fb:"Interés simple = C × i × n = 1.000.000 × 0,10 × 4 = $400.000."},
+{t:"CG3",q:"¿Cuál es la tasa de interés anual equivalente a 1,9804% semestral?",a:"4,0%",ops:["3,9%","4,0%","4,1%","3,5%"],fb:"(1 + 0,019804)² − 1 = 4,0% anual compuesto."},
+{t:"CG3",q:"Inversión de $10.000.000 al 3% mensual compuesto durante 2 meses. ¿Valor futuro?",a:"$10.609.000",ops:["$10.600.000","$10.609.000","$10.603.000","$10.690.000"],fb:"VF = 10.000.000 × (1,03)² = 10.000.000 × 1,0609 = $10.609.000."},
+{t:"CG3",q:"¿Valor presente de $100 a recibir en 1 año si la tasa es 10% nominal?",a:"$90,909",ops:["$91,00","$90,00","$90,909","$89,29"],fb:"VP = 100/(1,10) = $90,909..."},
+{t:"CG3",q:"Inversionista invirtió $5M en FM y retiró $5,3M. IPC del período: 2%. ¿R. nominal y real?",a:"R.Nominal=6,0%, R.Real=4,00%",ops:["R.Nominal=6,0%, R.Real=4,00%","R.Nominal=5,3%, R.Real=3,3%","R.Nominal=4,0%, R.Real=2,0%","R.Nominal=6,0%, R.Real=3,9%"],fb:"Nominal = (5,3/5,0)−1 = 6%. Real ≈ 6% − 2% = 4% (aproximación de Fisher)."},
+{t:"CG3",q:"Spot USD/CLP $480, tasa CLP 2% anual, tasa USD 7% anual. ¿Forward a 180 días?",a:"$468,41",ops:["$492,00","$468,41","$480,00","$455,20"],fb:"Forward = Spot × (1+rCLP×t)/(1+rUSD×t) = 480 × (1+0,01)/(1+0,035) ≈ $468,41."},
+{t:"CG3",q:"Spot USD $475, tasa local 6%, tasa USD 4%, plazo 360 días. ¿Precio forward?",a:"$484,10",ops:["$484,10","$490,00","$479,00","$475,00"],fb:"Forward = 475 × (1,06)/(1,04) ≈ $484,10."},
+{t:"CG3",q:"Spot $500/USD, tasa CLP 4,25%, tasa USD 0,25%, 6 meses. ¿Forward?",a:"$510 por dólar.",ops:["$505 por dólar.","$510 por dólar.","$515 por dólar.","$500 por dólar."],fb:"Forward = 500 × (1+0,02125)/(1+0,00125) ≈ $510. Tasas a 6 meses."},
+{t:"CG3",q:"Si las tasas en pesos y dólares son iguales en un forward, ¿qué pasa con el precio futuro?",a:"No tiene variaciones.",ops:["Sube.","Baja.","No tiene variaciones.","Depende del plazo."],fb:"Paridad de tasas: si tasas son iguales, no hay diferencial → no hay variación esperada del tipo de cambio."},
+{t:"CG3",q:"Un FRA 6x9 corresponde a:",a:"Una tasa por un período de 3 meses.",ops:["Una tasa por 6 meses.","Una tasa por 9 meses.","Una tasa por un período de 3 meses.","Un forward de divisas a 9 meses."],fb:"FRA AxB: período cubierto = B−A = 9−6 = 3 meses, comenzando dentro de 6 meses."},
+{t:"CG3",q:"Si aumenta la volatilidad, ceteris paribus, el precio de una opción PUT será:",a:"Mayor.",ops:["Menor.","Mayor.","Igual.","Depende del subyacente."],fb:"Mayor volatilidad → mayor probabilidad de terminar in-the-money → mayor prima (tanto para CALL como PUT)."},
+{t:"CG3",q:"Cliente compra CALL a 90 días a precio de ejercicio $480. Día 90, spot $490. Cliente:",a:"Ejerce la opción y luego vende el spot.",ops:["No ejerce la opción.","Ejerce la opción y luego vende el spot.","Vende la opción antes del vencimiento.","Pierde la prima solamente."],fb:"Spot ($490) > ejercicio ($480) → conviene ejercer. Compra a $480, vende en spot a $490 = ganancia $10/USD."},
+{t:"CG3",q:"Opción para comprar USD 10.000 a $580. Día de vencimiento spot $500. Usted:",a:"No ejercerá la opción de compra.",ops:["Ejerce y compra a $580.","No ejercerá la opción de compra.","Ejerce y vende a $580.","Recibe la diferencia automáticamente."],fb:"No conviene ejercer si spot ($500) < ejercicio ($580). Se pierde solo la prima pagada."},
+{t:"CG3",q:"Un bono Bullet paga en cada cupón:",a:"Interés y la amortización más interés en el último cupón.",ops:["Solo intereses en todos los cupones.","Interés y la amortización más interés en el último cupón.","Solo amortización al vencimiento.","Capital e intereses en cada cupón."],fb:"Bono BULLET: paga solo intereses en cupones intermedios + capital total + último interés al vencimiento."},
+{t:"CG3",q:"Para un cliente muy adverso al riesgo con cartera de 2 activos, ¿qué correlación deben tener?",a:"-1",ops:["0","+1","-1","No importa la correlación."],fb:"Correlación −1 = movimientos perfectamente OPUESTOS = máxima diversificación = riesgo mínimo."},
+{t:"CG3",q:"¿Qué es una Operación a Plazo (OP)?",a:"Una operación cuyo plazo es desde 3 a 180 días.",ops:["Una operación cuyo plazo es de 1 a 365 días.","Una operación cuyo plazo es desde 3 a 180 días.","Una operación a plazo indefinido.","Una operación liquidada el día siguiente."],fb:"OP: plazo de 3 a 180 días hábiles bursátiles. Más corto que un contado normal, más largo que PH y PM."},
+{t:"CG3",q:"El IGPA mide:",a:"Acciones con free-float ≥5%, montos transados sobre 10.000 UF anuales y presencia bursátil sobre 5%.",ops:["Las 40 acciones más transadas.","Acciones con free-float ≥5%, montos transados sobre 10.000 UF anuales y presencia bursátil sobre 5%.","Las 10 empresas con ADR.","Todos los instrumentos de la bolsa."],fb:"IGPA: índice amplio que incluye todas las acciones con liquidez, presencia y free-float mínimos."},
+{t:"CG3",q:"El índice que refleja a las empresas chilenas cotizadas en mercados externos es:",a:"Inter-10.",ops:["IGPA.","IPSA.","Inter-10.","TEND."],fb:"Inter-10: selección de 10 sociedades del IPSA que transan ADRs en el exterior."},
+{t:"CG3",q:"Si baja la demanda de carne, ¿qué pasa con la demanda de pollo?",a:"Aumenta.",ops:["Disminuye.","Aumenta.","No cambia.","Depende del precio."],fb:"El pollo es bien SUSTITUTO de la carne. Menor demanda de carne → mayor demanda de pollo."},
+{t:"CG3",q:"¿Cómo se llama el índice principal de la Bolsa Electrónica?",a:"Chile 65.",ops:["IPSA.","Chile 65.","Inter-10.","TEND."],fb:"Chile 65 es el índice más importante de la Bolsa Electrónica de Chile."},
+{t:"CG3",q:"El precio de un bono se calcula como:",a:"El valor presente de los cupones que quedan descontados a la TIR de mercado.",ops:["El valor nominal más intereses devengados.","El costo de adquisición más reajustes.","El valor presente de los cupones que quedan descontados a la TIR de mercado.","El valor par del bono."],fb:"Precio de mercado = VPN de todos los flujos futuros (cupones + amortización) descontados a la TIR vigente."},
+{t:"CG3",q:"La Tasa Interna de Retorno (TIR) se define como:",a:"La tasa de interés con la cual el VAN es igual a cero.",ops:["La tasa de descuento del emisor.","La tasa promedio del mercado.","La tasa de interés con la cual el VAN es igual a cero.","La rentabilidad histórica del activo."],fb:"TIR: tasa que iguala la inversión inicial con el VPN de los flujos futuros (VAN = 0)."},
+{t:"CG3",q:"La madurez de un bono corresponde a:",a:"Al plazo medido en años o meses que le queda al bono por vencer.",ops:["Al plazo desde la emisión.","A la duración modificada del bono.","Al plazo medido en años o meses que le queda al bono por vencer.","A la fecha de pago del próximo cupón."],fb:"Madurez = plazo RESTANTE hasta el vencimiento del bono. Diferente de la duración."},
+{t:"CG3",q:"Un bono en que la madurez y la duración son iguales es:",a:"Un bono Cero Cupón.",ops:["Un bono Bullet.","Un bono con cupones semestrales.","Un bono Cero Cupón.","Un bono con opción de rescate."],fb:"El bono cero cupón tiene duración = plazo de vencimiento, porque todo el flujo está al final."},
+{t:"CG3",q:"¿Qué es un bono cero cupón?",a:"Un bono que tiene un solo pago de interés y amortización al final del vencimiento.",ops:["Un bono que no paga intereses nunca.","Un bono que paga solo dividendos.","Un bono que tiene un solo pago de interés y amortización al final del vencimiento.","Un bono con cupones anuales."],fb:"Cero cupón: se emite BAJO la par y paga todo (capital + intereses acumulados) al vencimiento."},
+{t:"CG3",q:"Si el precio de una letra hipotecaria era 105% y su valor par era UF 120, ¿el valor de mercado?",a:"126 UF",ops:["120 UF","125 UF","126 UF","130 UF"],fb:"Valor mercado = Valor par × % precio = 120 × 1,05 = 126 UF."},
+{t:"CG3",q:"La garantía mínima en operaciones simultáneas corresponde a:",a:"25% del monto operado a plazo más la diferencia de precio de quien pierde.",ops:["10% del monto total.","25% del monto operado a plazo más la diferencia de precio de quien pierde.","50% del valor de las acciones.","100% del monto de la operación."],fb:"Garantía simultánea: 25% del monto a plazo + diferencias de precio diarias."},
+{t:"CG3",q:"El inversionista que realiza una venta corta espera:",a:"Que la acción baje de valor.",ops:["Que la acción suba de valor.","Que la acción baje de valor.","Que la acción se mantenga estable.","Que la empresa pague dividendos."],fb:"Venta corta: pide prestadas acciones, las vende, espera la baja y las recompra más baratas."},
+{t:"CG3",q:"La prima por riesgo en bonos se calcula habitualmente como:",a:"La diferencia entre la tasa de un bono corporativo y la tasa del bono del Banco Central (BCU) equivalente.",ops:["La tasa del bono corporativo menos la inflación.","La diferencia entre la tasa de un bono corporativo y la tasa del bono del Banco Central (BCU) equivalente.","La tasa de política monetaria menos la TIR del bono.","La duración del bono corporativo menos la del bono soberano."],fb:"Spread crediticio = tasa corporativa − tasa soberana (BCU) equivalente. Mide el premio por riesgo de crédito."},
+{t:"CG3",q:"Una opción CALL es:",a:"Derecho a comprar un activo a un precio prefijado dentro de un plazo determinado.",ops:["Obligación de comprar un activo.","Derecho a vender un activo.","Derecho a comprar un activo a un precio prefijado dentro de un plazo determinado.","Contrato de intercambio de tasas."],fb:"CALL = derecho de COMPRA (no obligación). PUT = derecho de VENTA."},
+{t:"CG3",q:"Un importador debe cubrir su riesgo de tipo de cambio comprando:",a:"Un CALL en dólares.",ops:["Un PUT en dólares.","Un CALL en dólares.","Un forward de venta de dólares.","Un futuro vendedor de dólares."],fb:"Importador necesitará USD en futuro. Compra CALL: derecho a comprar USD a precio fijo si sube."},
+{t:"CG3",q:"Una opción europea es aquella que:",a:"Solo puede ejercerse en la fecha de vencimiento.",ops:["Se transa solo en mercados europeos.","Solo puede ejercerse en la fecha de vencimiento.","Tiene el mayor plazo de vencimiento.","Protege contra movimientos del euro."],fb:"Europea: ejercicio SOLO en fecha exacta de vencimiento. Americana: ejercicio en cualquier momento."},
+{t:"CG3",q:"Un Forward es:",a:"Contrato a plazo que obliga a comprar/vender un activo en una fecha futura a un precio acordado hoy.",ops:["Derecho pero no obligación de comprar un activo.","Contrato estandarizado transado en bolsa.","Contrato a plazo que obliga a comprar/vender un activo en una fecha futura a un precio acordado hoy.","Permuta de flujos de caja entre dos partes."],fb:"Forward = OBLIGACIÓN (no derecho), PRIVADO (no bolsa), NO ESTANDARIZADO."},
+{t:"CG3",q:"¿Qué es una Orden Directa (OD)?",a:"Transacción donde el mismo corredor actúa como comprador y vendedor.",ops:["Orden ejecutada directamente por el cliente sin corredor.","Transacción donde el mismo corredor actúa como comprador y vendedor.","Orden con precio límite.","Operación fuera de rueda."],fb:"OD: un solo corredor calza la compra y la venta. Limitada a operaciones inferiores a 300.000 UF."},
+{t:"CG3",q:"Las características de los mercados de derivados bursátiles NO incluyen:",a:"Ser OTC y no estandarizados.",ops:["Estandarización de contratos.","Ser OTC y no estandarizados.","Transar en bolsa.","Tener cámara de compensación."],fb:"Los derivados BURSÁTILES son estandarizados y se transan en bolsa. Los OTC son forwards y swaps."},
+{t:"CG3",q:"La Unidad de Fomento (UF) es:",a:"Una unidad financiera reajustable según el IPC.",ops:["Una moneda extranjera.","Una unidad financiera reajustable según el IPC.","Un índice de acciones.","Una tasa fijada por el Banco Central."],fb:"UF: unidad reajustable según la inflación (IPC). Actualizada diariamente por el INE."},
+{t:"CG3",q:"Los contratos de futuros se caracterizan por:",a:"Transarse en mercados bursátiles estandarizados.",ops:["Ser privados entre dos partes.","Transarse en mercados bursátiles estandarizados.","No tener fecha de vencimiento.","Ser exclusivos de commodities."],fb:"Futuros: contratos estandarizados transados en bolsas con cámara de compensación."},
+{t:"CG3",q:"Una mejoría en la calificación de riesgo de un país redunda en:",a:"La apreciación de la moneda, ceteris paribus, pero depende de la situación política y del Banco Central.",ops:["Siempre la apreciación inmediata de la moneda.","La apreciación de la moneda, ceteris paribus, pero depende de la situación política y del Banco Central.","La depreciación garantizada.","Ningún efecto sobre la moneda."],fb:"La mejoría de la calificación tiende a apreciar la moneda, pero otros factores (política, BC) también influyen."},
+{t:"CG3",q:"La rentabilidad del bono al momento de la compra (TIR inicial) se garantiza:",a:"Solo si se mantiene hasta el vencimiento.",ops:["Siempre.","Solo si se mantiene hasta el vencimiento.","Solo si las tasas suben.","Nunca."],fb:"La TIR inicial se realiza SOLO si se mantiene hasta el vencimiento (y se reinvierten cupones a esa tasa)."},
+{t:"CG3",q:"¿Cuál es la tasa efectiva semestral de un 5% semestral capitalizable mensualmente?",a:"5,1%",ops:["5,0%","5,1%","5,2%","5,5%"],fb:"r_mensual = 5%/6 ≈ 0,833%. (1,00833)^6 − 1 ≈ 5,1%."},
+{t:"CG3",q:"Si la tasa anual es 9%, ¿la tasa mensual compuesta?",a:"0,72% mensual.",ops:["0,75% mensual.","0,72% mensual.","0,50% mensual.","1,00% mensual."],fb:"(1,09)^(1/12) − 1 ≈ 0,72% mensual compuesto."},
+{t:"CG3",q:"$10M a 1,5% trimestral compuesto por 4 trimestres. ¿Valor futuro?",a:"$10.613.636",ops:["$10.600.000","$10.613.636","$10.613.000","$10.500.000"],fb:"VF = 10.000.000 × (1,015)^4 ≈ $10.613.636."},
+{t:"CG3",q:"$500.000 en FM de renta fija al 6% anual por 1 año. ¿Valor a recibir?",a:"$530.000",ops:["$510.000","$520.000","$530.000","$560.000"],fb:"VF = 500.000 × 1,06 = $530.000 al final del año."},
+{t:"CG3",q:"300 UF en DAP al UF+5% anual por 60 días. ¿Valor a recibir?",a:"302,5 UF",ops:["315 UF","302,5 UF","300 UF","305 UF"],fb:"Interés = 300 × 0,05 × (60/360) = 2,5 UF. Total = 302,5 UF."},
+{t:"CG3",q:"Monto futuro de $2.000.000 a 3 años al 8% simple anual:",a:"$2.480.000",ops:["$2.400.000","$2.480.000","$2.519.424","$2.160.000"],fb:"VF = 2.000.000 × (1 + 0,08 × 3) = 2.000.000 × 1,24 = $2.480.000."},
+{t:"CG3",q:"Inversión entregó rentabilidad nominal 2,0% y IPC del período 0,8%. ¿Rentabilidad real?",a:"1,2%",ops:["1,0%","1,2%","2,8%","0,8%"],fb:"Real ≈ nominal − inflación = 2,0% − 0,8% = 1,2% (aproximación de Fisher)."},
+{t:"CE1",q:"Son considerados inversionistas calificados, entre otros:",a:"Inversionistas institucionales, corredores por cuenta propia y personas con inversiones financieras sobre 10.000 UF.",ops:["Solo inversionistas institucionales.","Solo profesionales con postgrado en finanzas.","Inversionistas institucionales, corredores por cuenta propia y personas con inversiones financieras sobre 10.000 UF.","Cualquier persona que declare serlo."],fb:"NCG 216: institucionales + corredores cuenta propia + personas con más de 10.000 UF en inversiones."},
+{t:"CE1",q:"Las recomendaciones de inversión del corredor deben hacerse basadas en:",a:"Información fundada y objetiva, con el único propósito de servir al cliente con la máxima prudencia.",ops:["La estrategia comercial de la corredora.","Información fundada y objetiva, con el único propósito de servir al cliente con la máxima prudencia.","Las instrucciones del directorio.","Solo cuando el cliente lo solicite expresamente."],fb:"Principio de lealtad: las recomendaciones deben ser objetivas, prudentes y mostrar los riesgos al cliente."},
+{t:"CE1",q:"El corredor tiene prohibido hacer afirmaciones que:",a:"Garanticen rentabilidades respecto de valores susceptibles de fluctuaciones en el mercado.",ops:["Mencionen riesgos del instrumento.","Garanticen rentabilidades respecto de valores susceptibles de fluctuaciones en el mercado.","Recomienden un instrumento frente a otro.","Comparen rentabilidades históricas de fondos."],fb:"PROHIBICIÓN ABSOLUTA: ningún corredor puede garantizar rentabilidades en valores de mercado fluctuante."},
+{t:"CE1",q:"Los corredores que proveen custodia de valores deben enviar cartolas a clientes:",a:"Mensualmente si hubo movimientos; al menos una vez al año si no hubo movimientos.",ops:["Solo cuando el cliente lo solicite.","Anualmente en todos los casos.","Mensualmente si hubo movimientos; al menos una vez al año si no hubo movimientos.","Trimestralmente siempre."],fb:"Frecuencia de cartolas: MENSUAL (con movimientos) o ANUAL (sin movimientos)."},
+{t:"CE1",q:"La administración de la custodia de valores de clientes es:",a:"Responsabilidad exclusiva del corredor y no puede transferirse sin autorización expresa del cliente.",ops:["Responsabilidad del DCV.","Responsabilidad de la bolsa de valores.","Responsabilidad exclusiva del corredor y no puede transferirse sin autorización expresa del cliente.","Responsabilidad compartida con la CMF."],fb:"La custodia es responsabilidad PERSONAL e INTRANSFERIBLE del corredor, salvo autorización expresa del cliente."},
+{t:"CE1",q:"Ningún corredor podrá comprar para sí un valor ni vender de lo suyo o de familiares hasta 2º grado:",a:"Mientras existan órdenes de comitentes por los mismos valores que no hubieren sido cumplidas, en similares condiciones.",ops:["Nunca, bajo ninguna circunstancia.","Mientras existan órdenes de comitentes por los mismos valores que no hubieren sido cumplidas, en similares condiciones.","Solo si el cliente lo autoriza por escrito.","Solo en horario fuera de rueda."],fb:"Principio de prioridad del cliente: primero se ejecutan las órdenes del comitente, luego las de cuenta propia."},
+{t:"CE1",q:"La circularización a clientes que debe hacer el corredor es:",a:"Al menos una vez al año, al 100% de clientes con valores en custodia, supervisada y certificada por auditores externos.",ops:["Solo cuando el cliente la solicita.","Al menos una vez al año, al 100% de clientes con valores en custodia, supervisada y certificada por auditores externos.","Mensualmente para clientes institucionales.","Cada 2 años para todos."],fb:"Circularización: ANUAL, al 100% de clientes con custodia, certificada por auditores externos."},
+{t:"CE1",q:"La falta de cumplimiento por parte del comitente de las exigencias del corredor para aceptar la orden:",a:"Exime al corredor de la obligación de aceptar la operación encomendada.",ops:["El corredor debe ejecutar de todas formas.","Exime al corredor de la obligación de aceptar la operación encomendada.","El corredor debe reportar a la CMF.","El corredor puede ejecutar pero sin responsabilidad."],fb:"Si el cliente no cumple los requisitos (identidad, fondos, etc.), el corredor queda EXENTO de aceptar la orden."},
+{t:"CE1",q:"Las órdenes de bolsa podrán especificar \'precio límite\', que significa:",a:"El precio máximo aceptable para compra o el precio mínimo aceptable para venta.",ops:["El precio actual de mercado.","El precio máximo aceptable para compra o el precio mínimo aceptable para venta.","El precio histórico del día anterior.","El precio fijado por el corredor."],fb:"Precio límite: máximo para COMPRA, mínimo para VENTA. Protege al cliente de precios adversos."},
+{t:"CE1",q:"Toda orden de bolsa dada por un comitente a un corredor tiene:",a:"Carácter de reservada, exhibible solo ante autoridades fiscalizadoras o Directorio/Gerencia de la Bolsa.",ops:["Carácter público, visible en el mercado.","Carácter de reservada, exhibible solo ante autoridades fiscalizadoras o Directorio/Gerencia de la Bolsa.","Solo carácter privado entre corredor y cliente.","Carácter obligatoriamente divulgable."],fb:"Las órdenes son RESERVADAS (secreto del cliente), pero exhibibles ante fiscalizadores o Bolsa."},
+{t:"CE1",q:"¿Qué son las Comisiones de Confianza en la relación corredor-cliente?",a:"Recibir del comitente acciones u otros valores solo para garantizar operaciones de bolsa del propio comitente o de terceros con autorización expresa.",ops:["Comisiones de corretaje negociables.","Recibir del comitente acciones u otros valores solo para garantizar operaciones de bolsa del propio comitente o de terceros con autorización expresa.","Comisiones pagadas por transacciones frecuentes.","Honorarios por asesoría financiera."],fb:"Comisiones de confianza: el corredor recibe valores SOLO para garantizar operaciones, con autorización escrita."},
+{t:"CE1",q:"El corredor puede operar por cuenta propia siempre que:",a:"Informe previamente al Directorio de la Bolsa mediante carta dirigida al mismo.",ops:["No hay restricciones.","Informe previamente al Directorio de la Bolsa mediante carta dirigida al mismo.","Tenga autorización del 100% de sus clientes.","Solo opere en renta fija."],fb:"Para operar cuenta propia: comunicación previa por carta al Directorio de la Bolsa."},
+{t:"CE2",q:"Una opción es:",a:"Operación donde el titular puede ejercer su derecho de comprar o vender un activo al precio prefijado.",ops:["Obligación recíproca de comprar y vender.","Operación donde el titular puede ejercer su derecho de comprar o vender un activo al precio prefijado.","Contrato estandarizado solo bursátil.","Permuta de flujos de caja."],fb:"Opción = DERECHO (no obligación) de comprar (CALL) o vender (PUT) a un precio prefijado."},
+{t:"CE2",q:"La tasa de descuento de un bono con opción de rescate respecto a otro similar del mismo emisor será:",a:"Mayor, ya que tiene mayor riesgo.",ops:["Igual, porque el emisor es el mismo.","Mayor, ya que tiene mayor riesgo.","Menor, porque el emisor puede rescatar antes.","Depende solo del plazo."],fb:"Opción de rescate = riesgo ADICIONAL para el inversor (puede recibir el capital antes si las tasas bajan) → mayor tasa exigida."},
+{t:"CE2",q:"La utilización del múltiplo Precio/Utilidad en valoración de acciones muestra:",a:"El número de años en recuperar la inversión.",ops:["La rentabilidad esperada.","El número de años en recuperar la inversión.","El dividendo por acción.","El valor libro de la acción."],fb:"P/U indica cuántos años tomaría recuperar la inversión si la utilidad actual se mantuviera constante."},
+{t:"CE2",q:"Una acción NO inscrita puede transarse en bolsa:",a:"Los segundos y cuartos jueves de cada mes.",ops:["Cualquier día en el sistema Telepregón.","Los segundos y cuartos jueves de cada mes.","Solo el primer día hábil de cada mes.","No puede transarse en bolsa."],fb:"Acciones no inscritas: remates los segundos y cuartos jueves de cada mes."},
+{t:"CE2",q:"El IPSA es la selección de:",a:"Las 40 sociedades con mayores montos transados ajustados (MTPA) trimestralmente, con capitalización sobre USD 200MM.",ops:["Todas las acciones de la bolsa.","Las 10 sociedades más grandes por capitalización.","Las 40 sociedades con mayores montos transados ajustados (MTPA) trimestralmente, con capitalización sobre USD 200MM.","Las 50 acciones más transadas del año."],fb:"IPSA: 40 acciones más transadas (MTPA ponderado trimestral) con capitalización > USD 200MM."},
+{t:"CE2",q:"El telepregón es:",a:"Sistema computacional de calce automático de ofertas a firme de acciones.",ops:["Sistema de comunicación entre bolsas.","Sistema computacional de calce automático de ofertas a firme de acciones.","Remate electrónico de renta fija.","Sistema de liquidación del DCV."],fb:"Telepregón: sistema electrónico principal de transacción de acciones en Chile."},
+{t:"CE2",q:"¿Qué son los CDV (Certificados de Depósito de Valores)?",a:"Certificados emitidos en Chile por un depositario nacional, representativos de valores de un emisor extranjero.",ops:["Certificados del Banco Central.","Certificados emitidos en Chile por un depositario nacional, representativos de valores de un emisor extranjero.","Recibos de depósito a plazo.","Títulos de deuda del fisco."],fb:"CDV: equivalente chileno de los ADR norteamericanos."},
+{t:"CE2",q:"Las actividades complementarias que pueden realizar los corredores incluyen:",a:"Custodia, administración de cartera de terceros, asesoría, representación y forwards.",ops:["Solo custodia y administración de cartera.","Custodia, administración de cartera de terceros, asesoría, representación y forwards.","Cualquier actividad financiera.","Solo las que autorice la CMF caso a caso."],fb:"Actividades complementarias: custodia, adm. cartera, asesoría, representación, estudios y contratos forward."},
+{t:"CE2",q:"Un Market Maker es:",a:"Corredor de Bolsa que asume la obligación de generar liquidez en una acción, contratado por el emisor.",ops:["Un inversionista institucional que marca precios.","Corredor de Bolsa que asume la obligación de generar liquidez en una acción, contratado por el emisor.","Un corredor que opera exclusivamente por cuenta propia.","La CMF cuando suspende una acción."],fb:"Market Maker: provee liquidez comprometiéndose a ofrecer precios de compra y venta continuamente."},
+{t:"CE2",q:"Un Fondo Mutuo Tipo 1 se caracteriza por:",a:"Instrumentos de renta fija con duración de cartera menor a 90 días.",ops:["Renta variable de alta liquidez.","Instrumentos de renta fija con duración de cartera menor a 90 días.","Mezcla de acciones y bonos.","Instrumentos indexados al dólar."],fb:"FM Tipo 1: MUY corto plazo, renta fija, duración < 90 días (tipo money market)."},
+{t:"CE2",q:"Los fondos de inversión distribuyen anualmente como dividendos al menos:",a:"80% de los beneficios netos percibidos durante el ejercicio.",ops:["30% de los beneficios netos.","50% de los beneficios netos.","80% de los beneficios netos percibidos durante el ejercicio.","100% de las utilidades líquidas."],fb:"Fondos de INVERSIÓN: mínimo 80% de beneficios netos percibidos (más alto que las S.A. con 30%)."},
+{t:"CE2",q:"Las S.A. en Chile deben repartir como mínimo:",a:"30% de la utilidad siempre que la sociedad no tenga pérdidas acumuladas.",ops:["10% de la utilidad.","20% de la utilidad.","30% de la utilidad siempre que la sociedad no tenga pérdidas acumuladas.","50% de la utilidad."],fb:"S.A. abiertas: 30% de utilidades líquidas (siempre que no haya pérdidas acumuladas)."},
+{t:"CE2",q:"Las órdenes de compra/venta deben archivarse por:",a:"4 años.",ops:["2 años.","4 años.","6 años.","10 años."],fb:"Archivo de órdenes: 4 años. Documentos cartera: 6 años. Documentación general intermediario: 10 años."},
+{t:"CE2",q:"El monto máximo mensual de APV régimen B descontable del sueldo es:",a:"50 UF.",ops:["25 UF.","50 UF.","100 UF.","Sin límite."],fb:"APV régimen B: tope mensual de descuento del sueldo es 50 UF."},
+{t:"CE2",q:"Una operación simultánea es:",a:"Compra (venta) a plazo indisoluble con una venta (compra) al contado por el mismo número de acciones.",ops:["Una operación en dos bolsas distintas.","Compra (venta) a plazo indisoluble con una venta (compra) al contado por el mismo número de acciones.","Un contrato forward sobre acciones.","Una orden directa entre dos corredores."],fb:"Simultánea: operación de repo/apalancamiento. Venta hoy + recompra a plazo (o viceversa)."},
+{t:"CE2",q:"El riesgo principal al apalancar compra de una acción mediante simultánea:",a:"Que la acción baje de precio.",ops:["Que el corredor quiebre.","Que la tasa de interés suba.","Que la acción baje de precio.","Que la CMF suspenda la operación."],fb:"Si la acción baja, el inversionista pierde en la posición apalancada y debe cubrir diferencias de precio."},
+{t:"CE2",q:"En una venta corta, el prestamista es:",a:"El inversionista dueño de acciones que las presta a cambio de un premio.",ops:["El que vende sin tenerlas.","El inversionista dueño de acciones que las presta a cambio de un premio.","La bolsa de valores.","El emisor de las acciones."],fb:"Prestamista (lender): dueño de las acciones que las presta a cambio de un premio."},
+{t:"CE2",q:"En una venta corta, el prestatario (vendedor corto) debe depositar como garantía:",a:"El valor de mercado inicial más diferencias diarias según comparación de precios.",ops:["Solo el 10% del valor.","El valor de mercado inicial más diferencias diarias según comparación de precios.","Solo un depósito fijo sin ajustes.","El 50% del valor total."],fb:"Garantía en venta corta: valor inicial + diferencias diarias (mark-to-market)."},
+{t:"CE2",q:"El remate holandés en renta fija funciona así:",a:"La compra se adjudica al corredor que ofrece la mejor tasa.",ops:["Se subasta al mejor precio de venta.","La compra se adjudica al corredor que ofrece la mejor tasa.","Gana el que tiene mayor volumen.","Se asigna por orden de llegada."],fb:"Remate holandés renta fija: gana la MEJOR TASA ofrecida por los compradores."},
+{t:"CE2",q:"Los instrumentos de intermediación financiera de corto plazo incluyen:",a:"PDBC, depósitos a plazo, efectos de comercio y pagarés.",ops:["Bonos del Banco Central a 10 años.","PDBC, depósitos a plazo, efectos de comercio y pagarés.","Acciones y derivados.","Cuotas de fondos de inversión."],fb:"IIF: PDBC, DAP, efectos de comercio, pagarés, letras de cambio. Todos de CORTO plazo."},
+{t:"CE2",q:"Si una exportadora vendió forward USD 1.000.000 a 90 días a $535. Al vencimiento spot $525. Entonces:",a:"El corredor le debe entregar a la empresa $10.000.000.",ops:["La empresa debe pagar al corredor la diferencia.","El corredor le debe entregar a la empresa $10.000.000.","El forward se anula.","No hay compensación."],fb:"Vendió a $535, spot $525. Ganancia = (535-525) × 1.000.000 = $10.000.000 a favor de la empresa."},
+{t:"CE2",q:"La operación en bolsa que se liquida al día subsiguiente de transada se denomina:",a:"Contado Normal (CN).",ops:["Pagadero Hoy (PH).","Contado Normal (CN).","Operación a Plazo.","Forward bursátil."],fb:"CN = T+2 (segundo día hábil bursátil). PH = mismo día, PM = día siguiente."},
+{t:"CE2",q:"En el mercado secundario formal:",a:"Compradores y vendedores participan simultánea y públicamente, directa o vía corredor.",ops:["Solo operan inversionistas institucionales.","Compradores y vendedores participan simultánea y públicamente, directa o vía corredor.","Solo se transan bonos.","Las operaciones son privadas."],fb:"Mercado secundario formal = bolsas de valores: participación SIMULTÁNEA y PÚBLICA."},
+{t:"CE2",q:"¿Qué son las operaciones fuera de rueda?",a:"Sistema paralelo donde el corredor negocia en forma privada con clientes condiciones de transacción, para renta fija, IIF, colocación primaria, dólares y oro.",ops:["Operaciones ilegales.","Sistema paralelo donde el corredor negocia en forma privada con clientes condiciones de transacción, para renta fija, IIF, colocación primaria, dólares y oro.","Solo operaciones en horario extendido.","Operaciones sin corredor."],fb:"Operaciones fuera de rueda: mercado paralelo para renta fija, IIF, dólares, oro. Negociación privada."},
+{t:"CE3",q:"¿Qué se considera información privilegiada según la LMV?",a:"Cualquier información referida a emisores no divulgada al mercado cuyo conocimiento sea capaz de influir en la cotización de los valores emitidos.",ops:["Cualquier información interna de una empresa.","Cualquier información referida a emisores no divulgada al mercado cuyo conocimiento sea capaz de influir en la cotización de los valores emitidos.","Solo la información de directores.","Los estados financieros no auditados."],fb:"Info privilegiada = no pública + capaz de influir en precios. Ambos elementos son NECESARIOS."},
+{t:"CE3",q:"Las personas jurídicas que infrinjan la Ley de Sociedades Anónimas, responderán:",a:"Civil, administrativa y penalmente sus administradores o representantes legales, a menos que conste su falta de participación u oposición al hecho.",ops:["Solo la sociedad, no las personas individuales.","Civil, administrativa y penalmente sus administradores o representantes legales, a menos que conste su falta de participación u oposición al hecho.","Solo penalmente los directores.","Solo los accionistas mayoritarios."],fb:"Responsabilidad TRIPLE (civil, administrativa, penal) de administradores/representantes, salvo constancia de no participación."},
+{t:"CE3",q:"Las entidades reportantes a la UAF deben mantener los registros especiales de operaciones por:",a:"5 años.",ops:["1 año.","3 años.","5 años.","10 años."],fb:"Registros UAF (lavado de activos): 5 años de conservación obligatoria."},
+{t:"CE3",q:"Las personas investigadas por operaciones sospechosas (tipping-off):",a:"Tienen prohibido informar que fueron requeridos por la UAF, incluso a sus empleados.",ops:["Pueden informar a sus clientes para protegerlos.","Deben avisar al Banco Central.","Tienen prohibido informar que fueron requeridos por la UAF, incluso a sus empleados.","Solo pueden informar a sus abogados."],fb:"Principio de TIPPING-OFF: está prohibido informar al sospechoso que está siendo investigado."},
+{t:"CE3",q:"La prevención del lavado de activos a nivel internacional se basa en:",a:"Las recomendaciones emitidas por el GAFI (Grupo de Acción Financiera Internacional).",ops:["Las normas del FMI.","Las recomendaciones emitidas por el GAFI (Grupo de Acción Financiera Internacional).","Los tratados bilaterales de extradición.","Las normas de la OCDE."],fb:"GAFI: organismo internacional que dicta los estándares contra lavado de activos y financiamiento del terrorismo."},
+{t:"CE3",q:"El oficial de cumplimiento debe:",a:"Coordinar los esfuerzos de vigilancia, detección, prevención y reporte de operaciones sospechosas.",ops:["Aprobar todas las operaciones sobre 450 UF.","Coordinar los esfuerzos de vigilancia, detección, prevención y reporte de operaciones sospechosas.","Reportar directamente a la CMF.","Auditar los estados financieros anuales."],fb:"Oficial de cumplimiento: responsable interno de prevención AML. Punto de contacto con la UAF."},
+{t:"CE3",q:"La información reservada debe cumplir copulativamente con:",a:"Estar relacionada a negociaciones pendientes y que su divulgación pueda perjudicar el interés social.",ops:["Ser aprobada por la CMF.","Estar relacionada a negociaciones pendientes y que su divulgación pueda perjudicar el interés social.","Ser aprobada por los auditores externos.","Cumplir solo con el requisito de ser interna."],fb:"Dos condiciones COPULATIVAS: (1) negociaciones pendientes Y (2) divulgación perjudicaría el interés social."},
+{t:"CE3",q:"¿Quién puede acordar establecer que una información sea reservada?",a:"Las 3/4 partes del directorio de la sociedad.",ops:["Mayoría simple del directorio.","Las 3/4 partes del directorio de la sociedad.","El gerente general.","La junta de accionistas."],fb:"Información reservada: requiere acuerdo de las 3/4 partes del directorio."},
+{t:"CE3",q:"Las personas naturales y jurídicas, ante actos sospechosos en el ejercicio de sus actividades:",a:"Deberán informar sobre los actos, transacciones u operaciones sospechosas.",ops:["Solo deben guardar silencio.","Deberán informar sobre los actos, transacciones u operaciones sospechosas.","Solo deben informar si son requeridos judicialmente.","No tienen obligación de informar."],fb:"Obligación legal: reportar operaciones sospechosas detectadas en el ejercicio de la actividad profesional."},
+{t:"CE3",q:"La investigación de delitos de la UAF según la ley 19.913 será:",a:"Secreta para terceros ajenos al procedimiento.",ops:["Pública siempre.","Secreta para terceros ajenos al procedimiento.","Con publicidad en el Diario Oficial.","Accesible al público general."],fb:"Las investigaciones UAF son SECRETAS para terceros ajenos al procedimiento."},
+{t:"CE3",q:"La prohibición de celebrar actos y contratos con organismos del Estado consiste en:",a:"Pérdida del derecho a participar como proveedor de bienes y servicios de los organismos del Estado.",ops:["Solo prohibición de exportar.","Pérdida del derecho a participar como proveedor de bienes y servicios de los organismos del Estado.","Imposibilidad de pagar impuestos.","Solo prohibición de importar."],fb:"La PJ condenada pierde el derecho a ser proveedor del Estado (licitaciones, compras públicas)."},
+{t:"CE3",q:"Los beneficios fiscales a que puede acceder una PJ son:",a:"Subvenciones del Estado u organismos sin prestación recíproca de bienes o servicios.",ops:["Solo exenciones tributarias.","Subvenciones del Estado u organismos sin prestación recíproca de bienes o servicios.","Devoluciones de IVA.","Créditos preferenciales bancarios."],fb:"Beneficios fiscales: subvenciones estatales SIN contraprestación (no son devoluciones ni exenciones)."},
+{t:"CE3",q:"¿El deber de reserva de información privilegiada persiste después de cesar en el cargo?",a:"Sí, el deber de reserva se mantiene incluso después de dejar el cargo.",ops:["No, cesa automáticamente.","Sí, el deber de reserva se mantiene incluso después de dejar el cargo.","Solo durante 1 año más.","Solo si firmó un NDA."],fb:"El deber de reserva es PERMANENTE: no tiene límite temporal al cesar en el cargo."},
+];
+// ═════════════════════════════════════════
+// PLAZOS
+// ═════════════════════════════════════════
+const PLAZOS=[
+  {term:'Día Siguiente',desc:'Presentar la publicidad de prensa a la CMF',cat:'Plazos'},
+  {term:'Día Siguiente',desc:'Comunicar a la CMF incumplimiento de requisitos mínimos (1 fondo, 50 partícipes, 10.000 UF)',cat:'Plazos'},
+  {term:'Día Siguiente',desc:'Depósito del reglamento interno — las cuotas podrán ser comercializadas',cat:'Plazos'},
+  {term:'Día Siguiente',desc:'Avisar operaciones de inversionistas institucionales sobre UF 500, excepto DAP',cat:'Plazos'},
+  {term:'2 días hábiles',desc:'Sociedad emisora proporciona al oferente la lista de accionistas desde el aviso de inicio de la OPA',cat:'Plazos'},
+  {term:'3 días hábiles',desc:'Directorio debe notificar cambios en la sociedad',cat:'Plazos'},
+  {term:'3 días hábiles',desc:'Desde el término de la OPA o prórroga para publicar el resultado de la oferta',cat:'Plazos'},
+  {term:'5 días',desc:'Informar cualquier modificación a la información proporcionada en la inscripción',cat:'Plazos'},
+  {term:'5 días hábiles',desc:'Pueden participar en asamblea de fondo no rescatable los inscritos al quinto día hábil anterior',cat:'Plazos'},
+  {term:'5 días hábiles',desc:'Para informar a la CMF que se pretende hacer una oferta pública',cat:'Plazos'},
+  {term:'5 días hábiles',desc:'AGF para comunicar a la CMF y proceder a su liquidación',cat:'Plazos'},
+  {term:'5 días hábiles',desc:'AGF para comunicar a partícipes y CMF que el capital disminuyó de pleno derecho',cat:'Plazos'},
+  {term:'5 días hábiles',desc:'Presentar informes al público, CMF, Bolsas, oferente y administrador de la oferta',cat:'Plazos'},
+  {term:'10 días',desc:'Junta de accionistas debe informar a la CMF sobre cualquier junta de accionistas',cat:'Plazos'},
+  {term:'10 días',desc:'Plazo máximo para traspasar los fondos al cliente',cat:'Plazos'},
+  {term:'10 días',desc:'Siguientes de producida la disolución para convocar Asamblea de Aportantes; si no hay, la CMF liquida',cat:'Plazos'},
+  {term:'10 días',desc:'Si todas las acciones están en manos de una persona, plazo para disolver la S.A.',cat:'Plazos'},
+  {term:'10 días',desc:'Previo al vencimiento de la OPA para presentar contraofertas',cat:'Plazos'},
+  {term:'15 días',desc:'Antes de la junta de accionistas para citar por correo a cada accionista',cat:'Plazos'},
+  {term:'15 días',desc:'Corredores de Bolsa para recurrir a la CMF cuando han sido suspendidos o expulsados',cat:'Plazos'},
+  {term:'15 días',desc:'CMF tiene para suspender el inicio o continuación de la oferta',cat:'Plazos'},
+  {term:'20 días',desc:'Transcurridos después que la OPA quedase sin efecto',cat:'Plazos'},
+  {term:'30 días',desc:'Accionista tiene derecho a retiro cuando el controlador adquiere más del 95% de las acciones de una S.A. Abierta',cat:'Plazos'},
+  {term:'30 días',desc:'Si administradora invierte 35% sobre el límite, debe subsanar ese exceso',cat:'Plazos'},
+  {term:'30 días',desc:'Intermediario y emisor deben informar al público inversionista al término de contrato',cat:'Plazos'},
+  {term:'30 días',desc:'CMF puede suspender oferta, cotizaciones o transacciones (prorrogable hasta 120 días)',cat:'Plazos'},
+  {term:'30 días',desc:'Desde la junta de accionistas para ejercer el derecho a retiro',cat:'Plazos'},
+  {term:'30 días',desc:'CMF para pronunciarse sobre solicitudes de inscripción en el Registro de Corredoras y Agentes',cat:'Plazos'},
+  {term:'30 días',desc:'OPA obligatoria si se alcanza 2/3 de las acciones con derecho a voto',cat:'Plazos'},
+  {term:'30 días Bursátiles',desc:'Plazo máximo para traspasar recursos y activos del cliente al terminar el contrato de administración o custodia',cat:'Plazos'},
+  {term:'60 días',desc:'Desde que se disuelve la junta de accionistas para designar un liquidador',cat:'Plazos'},
+  {term:'60 días',desc:'CMF para suspender operaciones en rescate de cuotas',cat:'Plazos'},
+  {term:'60 días',desc:'Derecho a rescate sin cargos por remuneración ante modificaciones al reglamento interno',cat:'Plazos'},
+  {term:'60 días',desc:'Fondos privados que superen 50 aportantes deben ajustar su reglamento',cat:'Plazos'},
+  {term:'90 días',desc:'Los valores no transados en 3 meses sufren cancelación de inscripción en el Registro de Valores',cat:'Plazos'},
+  {term:'90 días',desc:'AGF para enajenar las cuotas que superen el límite máximo',cat:'Plazos'},
+  {term:'3 meses',desc:'Bolsas de Valores para subsanar déficit de patrimonio mínimo de 30.000 UF',cat:'Plazos'},
+  {term:'180 días',desc:'Plazo máximo para iniciar la comercialización del fondo desde el depósito del reglamento interno',cat:'Plazos'},
+  {term:'180 días',desc:'Para efectuar fuera de Bolsa transacciones de nueva emisión de oferta pública desde el Registro',cat:'Plazos'},
+  {term:'6 meses',desc:'Fondo privado para subsanar el mínimo de aportantes o máximo de cuotas; si no pasa a ser S.A.',cat:'Plazos'},
+  {term:'6 meses',desc:'Período que deben guardar las Corredoras cuando pierdan su calidad de Corredor o Agente de Valores',cat:'Plazos'},
+  {term:'11 meses',desc:'Registro de las acciones en una bolsa de valores después de la fecha de inscripción',cat:'Plazos'},
+  {term:'360 días',desc:'Duración máxima de un préstamo promedio de acciones',cat:'Plazos'},
+  {term:'1 año',desc:'Desde el depósito del reglamento: AGF debe tener 1 fondo, 50 partícipes y 10.000 UF de patrimonio',cat:'Plazos'},
+  {term:'1 año',desc:'Que podrá ser cancelada o suspendida la inscripción de un intermediario por resolución fundada de la CMF',cat:'Plazos'},
+  {term:'1 año',desc:'AGF para subsanar el déficit de partícipes',cat:'Plazos'},
+  {term:'1 vez al año',desc:'Actualizar garantías de fondos: >10.000 UF, 1% patrimonio promedio diario (máximo 5%)',cat:'Plazos'},
+  {term:'3 años',desc:'Para que el capital quede suscrito y pagado; sino se reduce de pleno derecho al monto efectivamente pagado',cat:'Plazos'},
+  {term:'4 años',desc:'Plazo en que las órdenes de compra o venta recibidas deberán mantenerse archivadas',cat:'Plazos'},
+  {term:'5 años',desc:'Las entidades que reportan a la UAF deben mantener los registros especiales de operaciones',cat:'Plazos'},
+  {term:'5 años',desc:'Experiencia mínima de entidades para custodia de inversiones en valores extranjeros',cat:'Plazos'},
+  {term:'6 años',desc:'Documentos que respalden ingresos, egresos y movimientos de administración de cartera, desde el término del contrato',cat:'Plazos'},
+  {term:'10 años',desc:'Toda la documentación de respaldo de órdenes, instrucciones, operaciones y actuaciones del intermediario',cat:'Plazos'},
+  {term:'$1.000.000',desc:'Monto mínimo de obligaciones de pago por factura transada en bolsa',cat:'Montos'},
+  {term:'3.500 UF',desc:'Activos máximos de una agrícola para clasificarse como pequeño productor agrícola',cat:'Montos'},
+  {term:'4.000 UF',desc:'Garantía inicial que deben constituir los corredores de bolsa y agentes de valores',cat:'Montos'},
+  {term:'5.000 UF',desc:'Patrimonio mínimo para representantes de tenedores de bonos y administradores extraordinarios',cat:'Montos'},
+  {term:'6.000 UF',desc:'Patrimonio mínimo para corredor de bolsa o agente de valores (sin cuenta propia)',cat:'Montos'},
+  {term:'6.000 UF',desc:'Patrimonio mínimo para Bolsas de Productos para operar',cat:'Montos'},
+  {term:'10.000 UF',desc:'Patrimonio mínimo que debe tener un fondo dentro del primer año + 50 participantes',cat:'Montos'},
+  {term:'10.000 UF',desc:'Patrimonio mínimo de la AGF (Administradora General de Fondos)',cat:'Montos'},
+  {term:'14.000 UF',desc:'Patrimonio mínimo para corredores que operan por cuenta propia',cat:'Montos'},
+  {term:'14.000 UF',desc:'Patrimonio mínimo para Bolsas de Productos para operar por cuenta propia',cat:'Montos'},
+  {term:'30.000 UF',desc:'Patrimonio mínimo de entidades para custodia de inversiones en valores extranjeros',cat:'Montos'},
+  {term:'30.000 UF',desc:'Patrimonio mínimo que debe tener una bolsa de valores',cat:'Montos'},
+  {term:'1%',desc:'Las administradoras podrán adquirir diariamente cuotas hasta el 1% de su patrimonio',cat:'Porcentajes'},
+  {term:'5%',desc:'Máximo que pueden tener las AGF en cartera de cuotas de su propia emisión',cat:'Porcentajes'},
+  {term:'20%',desc:'Porcentaje máximo que una Administradora puede adquirir de su propio fondo',cat:'Porcentajes'},
+  {term:'30%',desc:'Dividendo mínimo obligatorio que deben distribuir las S.A. de sus utilidades líquidas',cat:'Porcentajes'},
+  {term:'35%',desc:'Máximo de cuotas que pueden tener dos inversionistas relacionados en fondos de inversión',cat:'Porcentajes'},
+  {term:'50%',desc:'Mínimo de cuotas que debe tener un inversionista institucional para que el fondo no deba cumplir con 50 partícipes y 10.000 UF',cat:'Porcentajes'},
+  {term:'80%',desc:'Dividendo mínimo anual que deben distribuir los fondos de inversión de sus beneficios netos percibidos',cat:'Porcentajes'},
+  {term:'95%',desc:'Umbral de adquisición que gatilla derecho a retiro del accionista minoritario de S.A. Abierta',cat:'Porcentajes'},
+  {term:'5 miembros',desc:'El consejo de la CMF está integrado por 5 miembros llamados comisionados',cat:'Miembros'},
+  {term:'10 miembros',desc:'Corredores mínimos en una bolsa de valores',cat:'Miembros'},
+  {term:'50 miembros',desc:'Mínimo de participantes que debe tener un fondo dentro del primer año + 10.000 UF',cat:'Miembros'},
+  {term:'500 miembros',desc:'Mínimo de accionistas de una S.A. Abierta + 10% de su capital pertenezca a mínimo 100 accionistas',cat:'Miembros'},
+  {term:'3/4 del directorio',desc:'Acuerdo requerido para establecer que una determinada información es reservada',cat:'Directorio'},
+  {term:'2/3 del directorio',desc:'Acuerdo para sustitución de administradora, división, transformación, fusión o disolución anticipada del fondo',cat:'Directorio'},
+  {term:'50%+1',desc:'Acuerdo del directorio para cualquier cambio que no requiera 3/4 ni 2/3',cat:'Directorio'},
+];
+
+// ═════════════════════════════════════════
+// ESTADO GLOBAL
+// ═════════════════════════════════════════
+const TEMAS={CG1:'Marco Jurídico',CG2:'Gestión de Riesgos',CG3:'Conceptos Financieros',CE1:'Perfil del Cliente',CE2:'Productos y Servicios',CE3:'Info Privilegiada'};
+const COMP={CG1:'General',CG2:'General',CG3:'General',CE1:'Específico',CE2:'Específico',CE3:'Específico'};
+const TICO={CG1:'⚖️',CG2:'🛡️',CG3:'🔢',CE1:'👤',CE2:'💼',CE3:'🔒'};
+// ═════════════════════════════════════════
+// PERSISTENCIA (guarda progreso entre sesiones)
+// ═════════════════════════════════════════
+const LS_KEY='camv_lupe_state_v2';
+function loadState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw)return null;
+    return JSON.parse(raw);
+  }catch(e){return null;}
+}
+function saveState(){
+  try{
+    localStorage.setItem(LS_KEY,JSON.stringify({sess,errP,pSt,pErr,theme:document.body.classList.contains('light')?'light':'dark'}));
+  }catch(e){}
+}
+const _saved=loadState();
+
+let aT='all';
+let sess=_saved?._saved_compat_||_saved?.sess||{ok:0,bad:0,byT:{}};
+let errP=_saved?.errP||[];
+let qS={ok:0,bad:0,q:[],cur:null};
+let eS={};
+let eTmr=null;
+let fc={deck:[],idx:0,flip:false,inv:false};
+let pCat='all';
+let pqS={ok:0,bad:0,q:[],cur:null};
+let pErr=_saved?.pErr||[];
+let pSt=_saved?.pSt||{ok:0,bad:0,byCat:{}};
+
+function getQ(t){return t==='all'?QS:QS.filter(q=>q.t===t);}
+function shu(a){let b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function bdg(t){return`<span class="bdg b${COMP[t][0]}">${COMP[t]} · ${TEMAS[t]}</span>`;}
+function getPL(){return pCat==='all'?PLAZOS:PLAZOS.filter(p=>p.cat===pCat);}
+function rec(q,ok){sess[ok?'ok':'bad']++;if(!sess.byT[q.t])sess.byT[q.t]={ok:0,bad:0};sess.byT[q.t][ok?'ok':'bad']++;saveState();}
+function addE(q){if(!errP.find(e=>e.q===q.q))errP.push(q);saveState();}
+
+// THEME
+function toggleTheme(){const l=document.body.classList.toggle('light');document.getElementById('tbtn').textContent=l?'🌙':'☀️';saveState();}
+
+// NAVIGATION
+function goPage(n,btn){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-'+n).classList.add('on');
+  if(btn)btn.classList.add('on');
+  if(n==='dash')renderDash();
+  if(n==='quiz')initQ();
+  if(n==='match')initM();
+  if(n==='errors')renderErr();
+  if(n==='plazos'){buildPCats();initFC();initPQ();renderPE();renderPP();}
+}
+function selT(t,el){aT=t;document.querySelectorAll('.sb-it').forEach(i=>i.classList.remove('on'));el.classList.add('on');initQ();initM();renderDash();}
+function updateCnts(){document.getElementById('cn-all').textContent=QS.length;['CG1','CG2','CG3','CE1','CE2','CE3'].forEach(t=>{const el=document.getElementById('cn-'+t);if(el)el.textContent=QS.filter(q=>q.t===t).length;});}
+
+// DASHBOARD
+function renderDash(){
+  // Determinar qué temas mostrar según filtro del sidebar
+  const temasToShow = aT==='all' ? ['CG1','CG2','CG3','CE1','CE2','CE3'] : [aT];
+  // Calcular totales respetando el filtro
+  let fOk=0, fBad=0;
+  temasToShow.forEach(t=>{const s=sess.byT[t]||{ok:0,bad:0};fOk+=s.ok;fBad+=s.bad;});
+  const tot=fOk+fBad, pct=tot?Math.round(fOk/tot*100):null;
+  // Errores únicos: si hay filtro, solo cuentan los del tema seleccionado
+  const errCnt = aT==='all' ? errP.length : errP.filter(e=>e.t===aT).length;
+  // Título con filtro visible
+  const filterLabel = aT==='all' ? '' : ` <span style="font-size:12px;color:var(--yel);font-weight:600;margin-left:8px;">· Filtrado: ${TICO[aT]} ${TEMAS[aT]}</span>`;
+  document.getElementById('d-global').innerHTML=`<div class="sb2 ok"><div class="v">${fOk}</div><div class="l">✅ Correctas</div></div><div class="sb2 bad"><div class="v">${fBad}</div><div class="l">❌ Incorrectas</div></div><div class="sb2 pct"><div class="v">${pct!==null?pct+'%':'—'}</div><div class="l">% ${aT==='all'?'Global':aT}</div></div><div class="sb2"><div class="v">${errCnt}</div><div class="l">Errores únicos</div></div>`;
+  const el=document.getElementById('d-temas');el.innerHTML='';
+  let worst=[],best=[],nodata=[];
+  temasToShow.forEach(t=>{
+    const s=sess.byT[t]||{ok:0,bad:0};const tt=s.ok+s.bad;const p=tt?Math.round(s.ok/tt*100):null;
+    const cls=p===null?'':p>=70?'tgrn':p>=40?'tylw':'tred';
+    const col=p===null?'var(--s3)':p>=70?'var(--grn)':p>=40?'var(--yel)':'var(--red)';
+    el.innerHTML+=`<div class="tc ${cls}"><div class="tc-head"><span class="tc-name">${TICO[t]} ${TEMAS[t]} <small style="color:var(--mut);font-weight:400;">(${COMP[t]})</small></span><span class="tc-pct" style="color:${col}">${p!==null?p+'%':'Sin datos'}</span></div><div class="tc-meta">${tt?`${s.ok} correctas · ${s.bad} incorrectas`:'Aún no practicado'} · ${QS.filter(q=>q.t===t).length} preguntas</div><div class="pb-w"><div class="pb-f" style="width:${p||0}%;background:${col}"></div></div></div>`;
+    if(p===null)nodata.push(t);else if(p<50)worst.push(t);else if(p>=70)best.push(t);
+  });
+  let s='';
+  if(aT!=='all'){s=`🔍 <strong>Viendo solo:</strong> ${TICO[aT]} ${TEMAS[aT]}. Para ver todos los temas, haz click en "📚 Todos" en el sidebar.`;}
+  else{
+    if(worst.length)s+=`🔴 <strong>Refuerza:</strong> ${worst.map(t=>TEMAS[t]).join(', ')}.<br>`;
+    if(best.length)s+=`✅ <strong>Dominados:</strong> ${best.map(t=>TEMAS[t]).join(', ')}.<br>`;
+    if(nodata.length)s+=`📋 <strong>Sin datos:</strong> ${nodata.map(t=>TEMAS[t]).join(', ')}.`;
+  }
+  document.getElementById('d-sugg').innerHTML=s||'Practica en el Quiz o Examen para ver sugerencias personalizadas aquí.';
+}
+function resetSess(){if(confirm('¿Reiniciar toda la sesión?')){sess={ok:0,bad:0,byT:{}};errP=[];qS={ok:0,bad:0,q:[],cur:null};saveState();renderDash();}}
+
+// QUIZ
+function initQ(){qS.ok=0;qS.bad=0;buildQQ();renderQS();nextQ();}
+function buildQQ(){let pool=getQ(aT).length>=2?getQ(aT):QS;let w=[...pool];errP.forEach(e=>{const q=QS.find(x=>x.q===e.q);if(q){w.push(q);w.push(q);}});qS.q=shu(w);}
+function nextQ(){
+  document.getElementById('q-fb').style.display='none';document.getElementById('q-next').style.display='none';
+  if(!qS.q.length)buildQQ();
+  qS.cur=qS.q.pop();const q=qS.cur;
+  document.getElementById('q-meta').innerHTML=bdg(q.t);
+  document.getElementById('q-txt').textContent=q.q;
+  const el=document.getElementById('q-opts');el.innerHTML='';
+  shu(q.ops).forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>ansQ(b,o,q);el.appendChild(b);});
+}
+function ansQ(btn,chosen,q){
+  document.querySelectorAll('#q-opts .opt').forEach(b=>b.disabled=true);
+  const ok=chosen===q.a;btn.classList.add(ok?'ok':'bad');
+  if(!ok)document.querySelectorAll('#q-opts .opt').forEach(b=>{if(b.textContent===q.a)b.classList.add('ok');});
+  rec(q,ok);if(ok)qS.ok++;else{qS.bad++;addE(q);}
+  renderQS();renderDash();
+  const fb=document.getElementById('q-fb');
+  fb.style.borderLeftColor=ok?'var(--grn)':'var(--red)';
+  fb.innerHTML=ok?`✅ <strong>¡Correcto!</strong>${q.fb?' — '+q.fb:''}`:`❌ <strong>Respuesta correcta:</strong> ${q.a}${q.fb?'<br><br>'+q.fb:''}`;
+  fb.style.display='block';document.getElementById('q-next').style.display='block';
+}
+function renderQS(){const t=qS.ok+qS.bad;document.getElementById('q-sr').innerHTML=`<div class="sb2 ok"><div class="v">${qS.ok}</div><div class="l">✅</div></div><div class="sb2 bad"><div class="v">${qS.bad}</div><div class="l">❌</div></div><div class="sb2 pct"><div class="v">${t?Math.round(qS.ok/t*100)+'%':'—'}</div><div class="l">%</div></div>`;}
+
+// MATCH
+let mS={};
+function initM(){
+  const pool=shu(getQ(aT)).slice(0,6);const items=pool.length>=2?pool:shu(QS).slice(0,6);
+  mS={items,sel:null,side:null,selEl:null,matched:0,total:items.length};
+  const L=shu(items),R=shu(items);
+  const wrap=document.getElementById('m-wrap');wrap.innerHTML='<div id="ml"></div><div id="mr"></div>';
+  L.forEach(it=>{const d=document.createElement('div');d.className='mi';d.textContent=it.q.length>65?it.q.slice(0,65)+'…':it.q;d.onclick=()=>selM(d,'L',it);document.getElementById('ml').appendChild(d);});
+  R.forEach(it=>{const d=document.createElement('div');d.className='mi';d.textContent=it.a.length>65?it.a.slice(0,65)+'…':it.a;d.onclick=()=>selM(d,'R',it);document.getElementById('mr').appendChild(d);});
+  document.getElementById('m-score').innerHTML='';
+}
+function selM(el,side,item){
+  if(el.classList.contains('matched'))return;
+  if(mS.side===side){document.querySelectorAll('.mi.sel').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');mS.sel=item;mS.side=side;mS.selEl=el;return;}
+  if(!mS.sel){el.classList.add('sel');mS.sel=item;mS.side=side;mS.selEl=el;return;}
+  const ok=mS.sel.q===item.q;
+  if(ok){mS.selEl.classList.remove('sel');mS.selEl.classList.add('matched');el.classList.add('matched');mS.matched++;rec(mS.sel,true);renderDash();if(mS.matched===mS.total)document.getElementById('m-score').innerHTML='<p style="color:var(--grn);font-weight:700;font-size:15px;">🎉 ¡Completado!</p>';}
+  else{el.classList.add('err');mS.selEl.classList.add('err');rec(mS.sel,false);addE(mS.sel);renderDash();setTimeout(()=>{el.classList.remove('err','sel');mS.selEl.classList.remove('err','sel');mS.sel=null;mS.side=null;mS.selEl=null;},700);return;}
+  mS.sel=null;mS.side=null;mS.selEl=null;
+}
+
+// EXAM
+function startE(){
+  const n=parseInt(document.getElementById('en').value);
+  const mins=parseInt(document.getElementById('et').value);
+  const comp=document.getElementById('ec').value;
+  let pool=QS;if(comp==='G')pool=QS.filter(q=>q.t.startsWith('CG'));else if(comp==='E')pool=QS.filter(q=>q.t.startsWith('CE'));
+  pool=shu(pool).slice(0,Math.min(n,pool.length));
+  eS={pool,idx:0,ok:0,bad:0,errors:[],secs:mins*60,timerOn:mins>0};
+  document.getElementById('e-setup').style.display='none';document.getElementById('e-run').style.display='block';document.getElementById('e-res').style.display='none';
+  if(eS.timerOn)startET();else document.getElementById('etimer').textContent='∞';
+  renderEQ();
+}
+function startET(){clearInterval(eTmr);eTmr=setInterval(()=>{eS.secs--;const m=Math.floor(eS.secs/60),s=eS.secs%60;document.getElementById('etimer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');if(eS.secs<=60)document.getElementById('etimer').style.color='var(--red)';if(eS.secs<=0){clearInterval(eTmr);finishE();}},1000);}
+function renderEQ(){
+  if(eS.idx>=eS.pool.length){finishE();return;}
+  const q=eS.pool[eS.idx];const pct=eS.idx/eS.pool.length*100;
+  document.getElementById('epfill').style.width=pct+'%';
+  document.getElementById('eq-meta').innerHTML=`Pregunta ${eS.idx+1}/${eS.pool.length} ${bdg(q.t)}`;
+  document.getElementById('eq-txt').textContent=q.q;
+  document.getElementById('eq-next').style.display='none';
+  const el=document.getElementById('eq-opts');el.innerHTML='';
+  shu(q.ops).forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>ansE(b,o,q);el.appendChild(b);});
+}
+function ansE(btn,chosen,q){
+  document.querySelectorAll('#eq-opts .opt').forEach(b=>b.disabled=true);
+  const ok=chosen===q.a;btn.classList.add(ok?'ok':'bad');
+  if(!ok){document.querySelectorAll('#eq-opts .opt').forEach(b=>{if(b.textContent===q.a)b.classList.add('ok');});eS.errors.push({q,chosen});addE(q);}
+  rec(q,ok);if(ok)eS.ok++;else eS.bad++;
+  document.getElementById('eq-next').style.display='block';
+}
+function nextE(){eS.idx++;renderEQ();}
+function finishE(){
+  clearInterval(eTmr);document.getElementById('e-run').style.display='none';
+  const res=document.getElementById('e-res');res.style.display='block';
+  const tot=eS.ok+eS.bad,pct=tot?Math.round(eS.ok/tot*100):0;
+  const c=document.getElementById('e-circ');c.textContent=pct+'%';c.style.borderColor=pct>=60?'var(--grn)':'var(--red)';
+  document.getElementById('er-ok').textContent=eS.ok;document.getElementById('er-bad').textContent=eS.bad;document.getElementById('er-pct').textContent=pct+'%';
+  const byT={};eS.errors.forEach(e=>{byT[e.q.t]=(byT[e.q.t]||0)+1;});
+  let th='';Object.entries(byT).sort((a,b)=>b[1]-a[1]).forEach(([t,n])=>{th+=`<div style="margin-bottom:6px;">${bdg(t)} <span style="font-size:12px;">${TEMAS[t]}: <strong>${n} error${n>1?'es':''}</strong></span></div>`;});
+  document.getElementById('er-temas').innerHTML=th||`<p style="color:var(--grn);font-size:13px;">¡Sin errores por sección! 🎉</p>`;
+  const ul=document.getElementById('er-list');ul.innerHTML='';
+  if(!eS.errors.length){ul.innerHTML='<li style="border-left-color:var(--grn);color:var(--grn);">¡Sin errores! 🎉</li>';}
+  eS.errors.forEach(e=>{const li=document.createElement('li');li.innerHTML=`<strong>${e.q.q}</strong><br><span style="color:var(--red);">Tu respuesta: ${e.chosen}</span><br><span style="color:var(--grn);">Correcta: ${e.q.a}</span>`;ul.appendChild(li);});
+  renderDash();
+}
+
+// ERRORS
+function renderErr(){
+  const el=document.getElementById('err-body');
+  if(!errP.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut);"><p style="font-size:40px;margin-bottom:10px;">🎉</p><p style="font-size:15px;">¡Sin errores en esta sesión!</p></div>';return;}
+  const deck=shu([...errP,...errP]);let idx=0;
+  function draw(){const q=deck[idx%deck.length];el.innerHTML=`<div style="font-size:11px;color:var(--mut);margin-bottom:8px;text-align:center;">Error ${(idx%errP.length)+1} de ${errP.length} únicos ${bdg(q.t)}</div><div class="qb" style="border-left-color:var(--red);">${q.q}</div><div id="ea" class="fb" style="border-left-color:var(--grn);"><strong>✅ Respuesta:</strong> ${q.a}${q.fb?'<br><br>'+q.fb:''}</div><div class="brow"><button class="btn sec" onclick="document.getElementById('ea').style.display='block'">👁 Ver respuesta</button><button class="btn" id="en2">Siguiente →</button><button class="btn red" onclick="errP=[];renderErr()">🗑 Limpiar</button></div>`;document.getElementById('en2').onclick=()=>{idx++;draw();};}
+  draw();
+}
+
+// PLAZOS MODULE
+const PCAT_IC={all:'📋',Plazos:'⏱',Montos:'💰',Porcentajes:'📊',Miembros:'👥',Directorio:'🏛'};
+function buildPCats(){
+  const bar=document.getElementById('p-cats');bar.innerHTML='';
+  ['all','Plazos','Montos','Porcentajes','Miembros','Directorio'].forEach(c=>{
+    const b=document.createElement('span');b.className='cp'+(c===pCat?' on':'');
+    b.textContent=(PCAT_IC[c]||'')+' '+(c==='all'?'Todas':c);
+    b.onclick=()=>{pCat=c;buildPCats();initFC();initPQ();};
+    bar.appendChild(b);
+  });
+}
+function showPS(id,btn){
+  ['p-fc','p-qz','p-err','p-prog'].forEach(s=>{const el=document.getElementById(s);if(el)el.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.snb').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');
+  if(id==='p-err')renderPE();if(id==='p-prog')renderPP();
+}
+function initFC(){fc.deck=shu(getPL());fc.idx=0;fc.flip=false;renderFC();}
+function renderFC(){
+  if(!fc.deck.length)return;const item=fc.deck[fc.idx];fc.flip=false;
+  document.getElementById('fc').classList.remove('flip');document.getElementById('fc-rates').style.display='none';
+  if(!fc.inv){document.getElementById('fc-ft').textContent=item.term;document.getElementById('fc-ft').className='fcterm';document.getElementById('fc-bt').textContent=item.desc;document.getElementById('fc-lf').textContent='Plazo / Valor';document.getElementById('fc-lb').textContent='Descripción';}
+  else{document.getElementById('fc-ft').textContent=item.desc;document.getElementById('fc-ft').className='fcterm sm';document.getElementById('fc-bt').textContent=item.term;document.getElementById('fc-lf').textContent='Descripción';document.getElementById('fc-lb').textContent='Plazo / Valor';}
+  document.getElementById('fc-cat').textContent=item.cat;
+  document.getElementById('fc-cnt').textContent=`${fc.idx+1} / ${fc.deck.length}`;
+}
+function flipFC(){document.getElementById('fc').classList.toggle('flip');fc.flip=!fc.flip;document.getElementById('fc-rates').style.display=fc.flip?'flex':'none';}
+function rateFC(r){
+  const item=fc.deck[fc.idx];const ok=r==='easy';
+  pSt[ok?'ok':'bad']++;if(!pSt.byCat[item.cat])pSt.byCat[item.cat]={ok:0,bad:0};pSt.byCat[item.cat][ok?'ok':'bad']++;
+  if(r==='hard')addPE(item);saveState();nextFC();
+}
+function nextFC(){fc.idx=(fc.idx+1)%fc.deck.length;renderFC();}
+function prevFC(){fc.idx=(fc.idx-1+fc.deck.length)%fc.deck.length;renderFC();}
+function shuffleFC(){fc.deck=shu(fc.deck);fc.idx=0;renderFC();}
+function toggleFCM(){fc.inv=!fc.inv;document.getElementById('fc-mb').textContent=fc.inv?'Desc → Plazo':'Plazo → Desc';renderFC();}
+function initPQ(){pqS.ok=0;pqS.bad=0;buildPQQ();renderPQS();nextPQ();}
+function buildPQQ(){let pool=getPL().length>=4?getPL():PLAZOS;let w=[...pool];pErr.forEach(e=>{w.push(e);w.push(e);});pqS.q=shu(w);}
+function nextPQ(){
+  document.getElementById('pq-fb').style.display='none';document.getElementById('pq-next').style.display='none';
+  let pool=getPL().length>=4?getPL():PLAZOS;if(!pqS.q.length)buildPQQ();
+  pqS.cur=pqS.q.pop();const item=pqS.cur;const mode=Math.random()<0.5?'tD':'dT';
+  let q,correct,dist;
+  if(mode==='tD'){q=`¿A qué se refiere: "${item.term}"?`;correct=item.desc;dist=shu(pool.filter(p=>p.desc!==correct)).slice(0,3).map(p=>p.desc);}
+  else{q=`¿Cuál es el plazo/valor para: "${item.desc.slice(0,100)+(item.desc.length>100?'…':'')}"?`;correct=item.term;dist=shu(pool.filter(p=>p.term!==correct)).slice(0,3).map(p=>p.term);}
+  document.getElementById('pq-txt').textContent=q;
+  const el=document.getElementById('pq-opts');el.innerHTML='';
+  shu([correct,...dist]).forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>ansPQ(b,o,correct,item);el.appendChild(b);});
+}
+function ansPQ(btn,chosen,correct,item){
+  document.querySelectorAll('#pq-opts .opt').forEach(b=>b.disabled=true);
+  const ok=chosen===correct;btn.classList.add(ok?'ok':'bad');
+  if(!ok){document.querySelectorAll('#pq-opts .opt').forEach(b=>{if(b.textContent===correct)b.classList.add('ok');});addPE(item);}
+  if(ok)pqS.ok++;else pqS.bad++;
+  pSt[ok?'ok':'bad']++;if(!pSt.byCat[item.cat])pSt.byCat[item.cat]={ok:0,bad:0};pSt.byCat[item.cat][ok?'ok':'bad']++;
+  saveState();renderPQS();
+  const fb=document.getElementById('pq-fb');fb.style.borderLeftColor=ok?'var(--grn)':'var(--red)';
+  fb.innerHTML=ok?`✅ <strong>¡Correcto!</strong> [${item.cat}]`:`❌ <strong>Respuesta:</strong> ${correct} <small>[${item.cat}]</small>`;
+  fb.style.display='block';document.getElementById('pq-next').style.display='block';
+}
+function renderPQS(){const t=pqS.ok+pqS.bad;document.getElementById('pq-ok').textContent=pqS.ok;document.getElementById('pq-bad').textContent=pqS.bad;document.getElementById('pq-pct').textContent=t?Math.round(pqS.ok/t*100)+'%':'—';}
+function addPE(item){if(!pErr.find(e=>e.term+e.desc===item.term+item.desc))pErr.push(item);}
+function renderPE(){
+  const el=document.getElementById('pe-body');
+  if(!pErr.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut);"><p style="font-size:36px;">🎉</p><p>¡Sin errores de plazos!</p></div>';return;}
+  const deck=shu([...pErr,...pErr,...pErr]);let idx=0;
+  function draw(){const item=deck[idx%deck.length];el.innerHTML=`<div style="font-size:11px;color:var(--mut);text-align:center;margin-bottom:8px;">Error ${(idx%pErr.length)+1} de ${pErr.length} únicos · ${item.cat}</div><div class="qb" style="border-left-color:var(--red);font-size:20px;font-weight:700;color:var(--yel);">${item.term}</div><div id="pe-ans" class="fb" style="border-left-color:var(--grn);">${item.desc} <small style="color:var(--mut);">[${item.cat}]</small></div><div class="brow"><button class="btn sec" onclick="document.getElementById('pe-ans').style.display='block'">👁 Revelar</button><button class="btn" id="pe-n">Siguiente →</button><button class="btn red" onclick="pErr=[];renderPE()">🗑 Limpiar</button></div>`;document.getElementById('pe-n').onclick=()=>{idx++;draw();};}
+  draw();
+}
+function renderPP(){
+  const el=document.getElementById('pp-body');
+  let h=`<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;"><div class="sb2 ok"><div class="v">${pSt.ok}</div><div class="l">✅ Total</div></div><div class="sb2 bad"><div class="v">${pSt.bad}</div><div class="l">❌ Total</div></div></div>`;
+  ['Plazos','Montos','Porcentajes','Miembros','Directorio'].forEach(c=>{
+    const s=pSt.byCat[c]||{ok:0,bad:0};const tot=s.ok+s.bad;const p=tot?Math.round(s.ok/tot*100):0;
+    const col=tot?(p>=70?'var(--grn)':p>=40?'var(--yel)':'var(--red)'):'var(--s3)';
+    h+=`<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;font-weight:600;"><span>${PCAT_IC[c]} ${c}</span><span style="color:${col}">${tot?p+'%':'Sin datos'}</span></div><div class="pb-w"><div class="pb-f" style="width:${p}%;background:${col}"></div></div><div style="font-size:11px;color:var(--mut);">${tot?`${s.ok} correctas · ${s.bad} incorrectas`:'Aún no practicado'}</div></div>`;
+  });
+  el.innerHTML=h;
+}
+function resetPS(){if(confirm('¿Reiniciar progreso de plazos?')){pSt={ok:0,bad:0,byCat:{}};pErr=[];saveState();renderPP();}}
+
+// INIT
+if(_saved?.theme==='light'){document.body.classList.add('light');document.getElementById('tbtn').textContent='☀️';}
+updateCnts();
+renderDash();
+initQ();
+</script>
+</body>
+</html>
